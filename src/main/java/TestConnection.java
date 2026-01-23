@@ -1,9 +1,8 @@
 import com.bookstore.util.DatabaseConnection;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class TestConnection {
-
+    // Class này chỉ dùng để TEST KẾT NỐI DATABASE
     public static void main(String[] args) {
         System.out.println("--- Đang kiểm tra kết nối đến Database ---");
         Connection conn = DatabaseConnection.getConnection();
@@ -13,9 +12,9 @@ public class TestConnection {
             System.out.println("Tên Database: bookstore_db");
 
             try {
-                conn.close();
+                DatabaseConnection.closeConnection(conn);
                 System.out.println("Đã đóng kết nối an toàn.");
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {

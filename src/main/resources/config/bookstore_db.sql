@@ -48,7 +48,7 @@ create table payment_method (
 create table employee (
 	employee_id int auto_increment primary key,
     employee_name varchar(100) not null,
-    employee_phone varchar(20) not null,
+    employee_phone varchar(20) unique not null,
     birthday date,
     base_salary decimal(15, 0) default 0,
     salary_factor decimal(5, 2) default 1,
@@ -177,3 +177,12 @@ create table import_ticket_detail (
 create index idx_inventory_date on inventory_log(created_date);
 create index idx_inventory_book on inventory_log(book_id);
 create index idx_bill_date on bill(created_date);
+
+insert into role (role_name) values ('Quản lý'),('Nhân viên bán hàng');
+insert into employee (employee_name, employee_phone, birthday, base_salary, day_in, role_id) values
+('Quản lý mẫu', '0914349584', '1999-04-15', 12000000, '2025-11-23', 1),
+('Nhân viên bán hàng mẫu', '0934129959', '2004-06-18', 7000000, '2025-12-11', 2);
+
+insert into account (username, password, employee_id) values
+('admin', 'admin', 1),
+('banhang', 'banhang', 2);

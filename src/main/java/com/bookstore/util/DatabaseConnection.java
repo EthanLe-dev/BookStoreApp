@@ -10,18 +10,19 @@ public class DatabaseConnection {
     private static final String PASSWORD = "admin";
 
     public static Connection getConnection() {
-        Connection connection = null;
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-
-        } catch (ClassNotFoundException e) {
-            System.err.println("Lỗi: Không tìm thấy thư viện JDBC MySQL!");
-            e.printStackTrace();
+            return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
-            System.err.println("Lỗi: Không thể kết nối đến Database!");
-            System.err.println("Chi tiết: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-        return connection;
+    }
+
+    public static void closeConnection(Connection c) {
+        try {
+            if (c != null) c.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
