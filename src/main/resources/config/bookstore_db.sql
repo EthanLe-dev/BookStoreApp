@@ -79,7 +79,7 @@ create table permission (
 create table customer (
 	customer_id int auto_increment primary key,
     customer_name varchar(100) not null,
-    customer_phone varchar(20) not null,
+    customer_phone varchar(20) unique not null,
     point int default 0,
     rank_id int default 1,
     foreign key (rank_id) references membership_rank(rank_id)
@@ -90,6 +90,7 @@ create table book (
     book_name varchar(255) not null,
     selling_price decimal(15, 0) default 0,
     quantity int default 0,
+	translator varchar(100),
     image varchar(255),
     description text,
     status bit default 1,
