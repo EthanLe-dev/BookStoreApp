@@ -178,7 +178,10 @@ create index idx_inventory_date on inventory_log(created_date);
 create index idx_inventory_book on inventory_log(book_id);
 create index idx_bill_date on bill(created_date);
 
+
+
 insert into role (role_name) values ('Quản lý'),('Nhân viên bán hàng');
+
 insert into employee (employee_name, employee_phone, birthday, base_salary, day_in, role_id) values
 ('Quản lý mẫu', '0914349584', '1999-04-15', 12000000, '2025-11-23', 1),
 ('Nhân viên bán hàng mẫu', '0934129959', '2004-06-18', 7000000, '2025-12-11', 2);
@@ -186,3 +189,43 @@ insert into employee (employee_name, employee_phone, birthday, base_salary, day_
 insert into account (username, password, employee_id) values
 ('admin', 'admin', 1),
 ('banhang', 'banhang', 2);
+
+insert into membership_rank (rank_name, min_point, discount_percent) values
+('Thành Viên', 0, 0),
+('Vàng', 1000, 5),
+('Bạch Kim', 3000, 10),
+('Kim Cương', 10000, 15);
+
+insert into payment_method (payment_method_name) values
+('Tiền mặt'),
+('Chuyển khoản ngân hàng'),
+('Ví điện tử (Momo/ZaloPay)');
+
+insert into category (category_name) values
+('Sách Giáo Khoa'),
+('Tiểu Thuyết'),
+('Kinh Tế'),
+('Công Nghệ Thông Tin'),
+('Truyện Tranh');
+
+INSERT INTO author (author_name, nationality) VALUES
+('Nguyễn Nhật Ánh', 'Việt Nam'),
+('J.K. Rowling', 'Anh'),
+('Haruki Murakami', 'Nhật Bản'),
+('Robert Kiyosaki', 'Mỹ');
+
+INSERT INTO supplier (supplier_name, supplier_address, supplier_phone) VALUES
+('NXB Kim Đồng', 'Hà Nội', '02439434730'),
+('NXB Trẻ', 'TP.HCM', '02839316289'),
+('Alpha Books', 'Hà Nội', '0901234567');
+
+INSERT INTO book (book_name, selling_price, quantity, translator, image, description, category_id, supplier_id) VALUES
+('Mắt Biếc', 120000, 50, null, 'matbiec.jpg', 'Truyện dài về tình yêu thanh thiếu niên', 2, 2),
+('Harry Potter và Hòn đá phù thủy', 250000, 20, 'Lý Lan', 'harrypotter1.jpg', 'Phần 1 bộ truyện Harry Potter', 2, 2),
+('Clean Code', 450000, 10, 'Nhiều dịch giả', 'cleancode.jpg', 'Sách gối đầu giường cho Dev', 4, 3);
+
+INSERT INTO book_author (book_id, author_id) VALUES(1, 1), (2, 2);
+
+INSERT INTO customer (customer_name, customer_phone, point, rank_id) VALUES
+('Trần Anh Khoa', '0912487648', 0, 1),
+('Nguyễn Ngọc Thành', '0987654321', 1200, 2);
