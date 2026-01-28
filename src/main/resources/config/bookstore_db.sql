@@ -94,9 +94,7 @@ create table book (
     image varchar(255),
     description text,
     status bit default 1,
-    category_id int not null,
     supplier_id int not null,
-    foreign key (category_id) references category(category_id),
     foreign key (supplier_id) references supplier(supplier_id)
 );
 
@@ -106,6 +104,14 @@ create table book_author (
     primary key (book_id, author_id),
     foreign key (book_id) references book(book_id),
     foreign key (author_id) references author(author_id)
+);
+
+create table book_category (
+    book_id int not null,
+    category_id int not null,
+    primary key (book_id, category_id),
+    foreign key (book_id) references book(book_id),
+    foreign key (category_id) references category(category_id)
 );
 
 create table discount (
@@ -137,6 +143,7 @@ create table bill (
     employee_id int not null,
     customer_id int,
     payment_method_id int not null,
+    earned_points int default 0,
     foreign key (employee_id) references employee(employee_id),
     foreign key (customer_id) references customer(customer_id),
     foreign key (payment_method_id) references payment_method(payment_method_id)
@@ -174,10 +181,15 @@ create table import_ticket_detail (
     foreign key (book_id) references book(book_id)
 );
 
+create table system_parameter (
+    param_key varchar(50) primary key,
+    param_value varchar(255) not null,
+    description varchar(255)
+);
+
 create index idx_inventory_date on inventory_log(created_date);
 create index idx_inventory_book on inventory_log(book_id);
 create index idx_bill_date on bill(created_date);
-
 
 
 insert into role (role_name) values ('Quản lý'),('Nhân viên bán hàng');
@@ -208,24 +220,20 @@ insert into category (category_name) values
 ('Công Nghệ Thông Tin'),
 ('Truyện Tranh');
 
-INSERT INTO author (author_name, nationality) VALUES
+insert into author (author_name, nationality) values
 ('Nguyễn Nhật Ánh', 'Việt Nam'),
 ('J.K. Rowling', 'Anh'),
 ('Haruki Murakami', 'Nhật Bản'),
 ('Robert Kiyosaki', 'Mỹ');
 
-INSERT INTO supplier (supplier_name, supplier_address, supplier_phone) VALUES
+insert into supplier (supplier_name, supplier_address, supplier_phone) values
 ('NXB Kim Đồng', 'Hà Nội', '02439434730'),
 ('NXB Trẻ', 'TP.HCM', '02839316289'),
 ('Alpha Books', 'Hà Nội', '0901234567');
 
-INSERT INTO book (book_name, selling_price, quantity, translator, image, description, category_id, supplier_id) VALUES
-('Mắt Biếc', 120000, 50, null, 'matbiec.jpg', 'Truyện dài về tình yêu thanh thiếu niên', 2, 2),
-('Harry Potter và Hòn đá phù thủy', 250000, 20, 'Lý Lan', 'harrypotter1.jpg', 'Phần 1 bộ truyện Harry Potter', 2, 2),
-('Clean Code', 450000, 10, 'Nhiều dịch giả', 'cleancode.jpg', 'Sách gối đầu giường cho Dev', 4, 3);
-
-INSERT INTO book_author (book_id, author_id) VALUES(1, 1), (2, 2);
-
-INSERT INTO customer (customer_name, customer_phone, point, rank_id) VALUES
+insert into customer (customer_name, customer_phone, point, rank_id) values
 ('Trần Anh Khoa', '0912487648', 0, 1),
 ('Nguyễn Ngọc Thành', '0987654321', 1200, 2);
+
+insert into system_parameter (param_key, param_value, description) values
+('POINTS_PER_10K', '100', 'Số điểm thưởng nhận được cho mỗi 10.000 VNĐ chi tiêu');
