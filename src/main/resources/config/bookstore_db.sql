@@ -23,7 +23,8 @@ create table action (
 
 create table category (
 	category_id int auto_increment primary key,
-    category_name varchar(100) not null
+    category_name varchar(100) unique not null,
+    description varchar(255)
 );
 
 create table author (
@@ -86,7 +87,7 @@ create table customer (
 );
 
 create table book (
-	book_id int auto_increment primary key,
+	book_id varchar(255) primary key,
     book_name varchar(255) not null,
     selling_price decimal(15, 0) default 0,
     quantity int default 0,
@@ -94,24 +95,18 @@ create table book (
     image varchar(255),
     description text,
     status bit default 1,
+    category_id int not null,
     supplier_id int not null,
+    foreign key (category_id) references category(category_id),
     foreign key (supplier_id) references supplier(supplier_id)
 );
 
 create table book_author (
-	book_id int not null,
+	book_id varchar(255) not null,
     author_id int not null,
     primary key (book_id, author_id),
     foreign key (book_id) references book(book_id),
     foreign key (author_id) references author(author_id)
-);
-
-create table book_category (
-    book_id int not null,
-    category_id int not null,
-    primary key (book_id, category_id),
-    foreign key (book_id) references book(book_id),
-    foreign key (category_id) references category(category_id)
 );
 
 create table discount (
@@ -120,7 +115,7 @@ create table discount (
     start_date datetime not null,
     end_date datetime not null,
     status int default 1,
-    book_id int not null,
+    book_id varchar(255) not null,
     foreign key (book_id) references book(book_id)
 );
 
@@ -131,7 +126,7 @@ create table inventory_log (
     remain_quantity int not null,
     reference_id varchar(50),
     created_date datetime default current_timestamp,
-    book_id int not null,
+    book_id varchar(255) not null,
     foreign key (book_id) references book(book_id)
 );
 
@@ -151,7 +146,7 @@ create table bill (
 
 create table bill_detail (
 	bill_id int not null,
-    book_id int not null,
+    book_id varchar(255) not null,
     quantity int not null,
     unit_price decimal(15, 0),
     primary key (bill_id, book_id),
@@ -173,7 +168,7 @@ create table import_ticket (
 
 create table import_ticket_detail (
 	import_ticket_id int not null,
-    book_id int not null,
+    book_id varchar(255) not null,
     import_quantity int not null,
     import_price decimal(15, 0),
     primary key (import_ticket_id, book_id),
@@ -212,13 +207,6 @@ insert into payment_method (payment_method_name) values
 ('Tiền mặt'),
 ('Chuyển khoản ngân hàng'),
 ('Ví điện tử (Momo/ZaloPay)');
-
-insert into category (category_name) values
-('Sách Giáo Khoa'),
-('Tiểu Thuyết'),
-('Kinh Tế'),
-('Công Nghệ Thông Tin'),
-('Truyện Tranh');
 
 insert into author (author_name, nationality) values
 ('Nguyễn Nhật Ánh', 'Việt Nam'),
