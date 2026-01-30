@@ -87,7 +87,7 @@ create table customer (
 );
 
 create table book (
-	book_id varchar(255) primary key,
+	book_id int auto_increment primary key,
     book_name varchar(255) not null,
     selling_price decimal(15, 0) default 0,
     quantity int default 0,
@@ -102,7 +102,7 @@ create table book (
 );
 
 create table book_author (
-	book_id varchar(255) not null,
+	book_id int auto_increment not null,
     author_id int not null,
     primary key (book_id, author_id),
     foreign key (book_id) references book(book_id),
@@ -115,7 +115,7 @@ create table discount (
     start_date datetime not null,
     end_date datetime not null,
     status int default 1,
-    book_id varchar(255) not null,
+    book_id int not null,
     foreign key (book_id) references book(book_id)
 );
 
@@ -126,7 +126,7 @@ create table inventory_log (
     remain_quantity int not null,
     reference_id varchar(50),
     created_date datetime default current_timestamp,
-    book_id varchar(255) not null,
+    book_id int not null,
     foreign key (book_id) references book(book_id)
 );
 
@@ -146,7 +146,7 @@ create table bill (
 
 create table bill_detail (
 	bill_id int not null,
-    book_id varchar(255) not null,
+    book_id int not null,
     quantity int not null,
     unit_price decimal(15, 0),
     primary key (bill_id, book_id),
@@ -168,7 +168,7 @@ create table import_ticket (
 
 create table import_ticket_detail (
 	import_ticket_id int not null,
-    book_id varchar(255) not null,
+    book_id int not null,
     import_quantity int not null,
     import_price decimal(15, 0),
     primary key (import_ticket_id, book_id),
@@ -186,7 +186,7 @@ create index idx_inventory_date on inventory_log(created_date);
 create index idx_inventory_book on inventory_log(book_id);
 create index idx_bill_date on bill(created_date);
 
-
+-- Khởi tạo vài dữ liệu mẫu --
 insert into role (role_name) values ('Quản lý'),('Nhân viên bán hàng');
 
 insert into employee (employee_name, employee_phone, birthday, base_salary, day_in, role_id) values
@@ -196,32 +196,3 @@ insert into employee (employee_name, employee_phone, birthday, base_salary, day_
 insert into account (username, password, employee_id) values
 ('admin', 'admin', 1),
 ('banhang', 'banhang', 2);
-
-insert into membership_rank (rank_name, min_point, discount_percent) values
-('Thành Viên', 0, 0),
-('Vàng', 1000, 5),
-('Bạch Kim', 3000, 10),
-('Kim Cương', 10000, 15);
-
-insert into payment_method (payment_method_name) values
-('Tiền mặt'),
-('Chuyển khoản ngân hàng'),
-('Ví điện tử (Momo/ZaloPay)');
-
-insert into author (author_name, nationality) values
-('Nguyễn Nhật Ánh', 'Việt Nam'),
-('J.K. Rowling', 'Anh'),
-('Haruki Murakami', 'Nhật Bản'),
-('Robert Kiyosaki', 'Mỹ');
-
-insert into supplier (supplier_name, supplier_address, supplier_phone) values
-('NXB Kim Đồng', 'Hà Nội', '02439434730'),
-('NXB Trẻ', 'TP.HCM', '02839316289'),
-('Alpha Books', 'Hà Nội', '0901234567');
-
-insert into customer (customer_name, customer_phone, point, rank_id) values
-('Trần Anh Khoa', '0912487648', 0, 1),
-('Nguyễn Ngọc Thành', '0987654321', 1200, 2);
-
-insert into system_parameter (param_key, param_value, description) values
-('POINTS_PER_10K', '100', 'Số điểm thưởng nhận được cho mỗi 10.000 VNĐ chi tiêu');
