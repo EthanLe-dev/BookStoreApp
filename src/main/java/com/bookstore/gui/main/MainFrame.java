@@ -3,7 +3,6 @@ package com.bookstore.gui.main;
 import com.bookstore.dto.EmployeeDTO;
 import com.bookstore.gui.panel.SellingPanel;
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import javax.swing.*;
 import java.awt.*;
@@ -235,12 +234,5 @@ public class MainFrame extends JFrame {
             btnImport.setVisible(false);
             btnAccount.setVisible(false);
         }
-    }
-
-    public static void main(String[] args) {
-        FlatLightLaf.setup();
-        EmployeeDTO employeeDTO = new EmployeeDTO();
-        employeeDTO.setEmployeeName("Tester");
-        new MainFrame(employeeDTO).setVisible(true);
     }
 }

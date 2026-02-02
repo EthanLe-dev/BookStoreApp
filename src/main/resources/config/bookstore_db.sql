@@ -24,7 +24,6 @@ create table action (
 create table category (
 	category_id int auto_increment primary key,
     category_name varchar(100) unique not null,
-    description varchar(255)
 );
 
 create table author (
@@ -96,6 +95,7 @@ create table book (
     description text,
     status bit default 1,
     category_id int not null,
+    tag_detail varchar(255),
     supplier_id int not null,
     foreign key (category_id) references category(category_id),
     foreign key (supplier_id) references supplier(supplier_id)
