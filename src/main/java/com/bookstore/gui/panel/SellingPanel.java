@@ -1,27 +1,44 @@
 package com.bookstore.gui.panel;
 
+import com.bookstore.bus.AuthorBUS;
+import com.bookstore.bus.BookBUS;
+import com.bookstore.bus.CategoryBUS;
+import com.bookstore.dto.AuthorDTO;
+import com.bookstore.dto.BookDTO;
+import com.bookstore.dto.CategoryDTO;
 import com.bookstore.util.SearchableComboBox;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SellingPanel extends JPanel {
-    private JComboBox<String> cboCategory;
-    private SearchableComboBox cboAuthor;
+    private SearchableComboBox<CategoryDTO> cboCategory;
+    private SearchableComboBox<AuthorDTO> cboAuthor;
     private JTextField txtPriceFrom, txtPriceTo, txtSearch;
     private JTable tblProduct;
     private DefaultTableModel productModel;
-    private JLabel lbProductImage;
-    private JButton btnAddToCart;
+    private JLabel lbProductImage, lbBookName, lbCategory, lbPrice, lbQuantity;
+    private JButton btnViewBookDetail, btnAddToCart;
 
     private JTable tblCart;
     private DefaultTableModel cartModel;
     private JTextField txtEmployee, txtCustomer, txtRank, txtPromo;
     private JLabel lbSubTotal, lbDiscountPromo, lbDiscountMember, lbFinalTotal;
     private JButton btnRefresh, btnDelete, btnEdit, btnPay;
+
+    private CategoryBUS categoryBUS = new CategoryBUS();
+    private AuthorBUS authorBUS = new AuthorBUS();
+    private BookBUS bookBUS = new BookBUS();
+
+    private List<BookDTO> listBooks = new ArrayList<>();
+    private DecimalFormat formatter = new DecimalFormat("###,###,###");
 
     public SellingPanel() {
         initUI();
@@ -37,6 +54,10 @@ public class SellingPanel extends JPanel {
 
         JPanel rightPanel = createRightPanel();
         add(rightPanel);
+
+        loadCategoriesToComBoBox();
+        loadAuthorsToComboBox();
+        loadBookTable();
     }
 
     private JPanel createLeftPanel() {
@@ -48,20 +69,10 @@ public class SellingPanel extends JPanel {
 
         JPanel pRow1 = new JPanel(new GridLayout(1,2,10,10));
         pRow1.setOpaque(false);
-        cboCategory = new JComboBox<>(new String[]{"Tất cả thể loại", "Truyện tranh", "Tiểu thuyết"});
 
-        String[] authorData = {
-                "Tất cả tác giả",
-                "Nguyễn Nhật Ánh",
-                "Nguyễn Du",
-                "Nguyễn Ngọc Tư",
-                "Fujiko F. Fujio",
-                "Nam Cao",
-                "Vũ Trọng Phụng",
-                "Tô Hoài",
-                "Lê Lợi (Tác giả giả định)"
-        };
-        cboAuthor = new SearchableComboBox(authorData);
+        cboCategory = new SearchableComboBox<>();
+        cboAuthor = new SearchableComboBox<>();
+
         pRow1.add(cboCategory);
         pRow1.add(cboAuthor);
         pFilter.add(pRow1);
@@ -83,13 +94,24 @@ public class SellingPanel extends JPanel {
         pFilter.add(txtSearch);
 
         String[] headers = {"Tên sản phẩm", "Thể loại", "Đơn giá", "SL"};
-        productModel = new DefaultTableModel(headers, 0);
+        productModel = new DefaultTableModel(headers, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tblProduct = new JTable(productModel);
         tblProduct.setRowHeight(30);
         styleTable(tblProduct);
-        setColumnWidth(tblProduct, 0, 200);
-        setColumnWidth(tblProduct, 2, 100);
-        setColumnWidth(tblProduct, 3, 50);
+        tblProduct.getColumnModel().removeColumn(tblProduct.getColumnModel().getColumn(0));
+        setColumnWidth(tblProduct, 1, 200);
+        setColumnWidth(tblProduct, 3, 100);
+        setColumnWidth(tblProduct, 4, 50);
+        tblProduct.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tblProduct.getSelectedRow() != -1) {
+                fillProductDetail();
+            }
+        });
 
         productModel.addRow(new Object[]{"Doraemon Tập 1", "Truyện tranh", "25.000", 142});
         productModel.addRow(new Object[]{"Mắt Biếc", "Tiểu thuyết", "110.000", 50});
@@ -109,27 +131,44 @@ public class SellingPanel extends JPanel {
         lbProductImage.setForeground(Color.WHITE);
         lbProductImage.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
+        lbBookName = new JLabel("Chọn sản phẩm");
+        lbCategory = new JLabel("-");
+        lbPrice = new JLabel("-");
+        lbQuantity = new JLabel("-");
+
         JPanel pInfo = new JPanel(new GridLayout(2, 2, 10, 5));
         pInfo.setBackground(Color.WHITE);
-        pInfo.add(createDetailLabel("Tên sản phẩm:", "Doraemon"));
-        pInfo.add(createDetailLabel("Thể loại:", "Truyện tranh"));
-        pInfo.add(createDetailLabel("Đơn giá:", "25.000đ"));
-        pInfo.add(createDetailLabel("Số lượng tồn:", "142"));
+        pInfo.add(createDetailLabel("Tên sản phẩm:", lbBookName));
+        pInfo.add(createDetailLabel("Thể loại:", lbCategory));
+        pInfo.add(createDetailLabel("Đơn giá:", lbPrice));
+        pInfo.add(createDetailLabel("Số lượng tồn:", lbQuantity));
+
+        btnViewBookDetail = new JButton("Xem chi tiết");
+        btnViewBookDetail.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnViewBookDetail.setForeground(Color.WHITE);
+        btnViewBookDetail.setBackground(Color.decode("#114732"));
+        btnViewBookDetail.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnViewBookDetail.putClientProperty(FlatClientProperties.STYLE, "arc: 10; hoverBackground: #00A364;");
 
         btnAddToCart = new JButton("Thêm vào hóa đơn");
-        btnAddToCart.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnAddToCart.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnAddToCart.setForeground(Color.WHITE);
         btnAddToCart.setBackground(Color.decode("#114732"));
         btnAddToCart.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAddToCart.putClientProperty(FlatClientProperties.STYLE, "arc: 10; hoverBackground: #00A364;");
 
-        JPanel pBottomRight = new JPanel(new BorderLayout(0, 10));
-        pBottomRight.setOpaque(false);
-        pBottomRight.add(pInfo, BorderLayout.CENTER);
-        pBottomRight.add(btnAddToCart, BorderLayout.SOUTH);
+        JPanel pActionBtn = new JPanel(new GridLayout(1, 2, 10, 10));
+        pActionBtn.setOpaque(false);
+        pActionBtn.add(btnViewBookDetail);
+        pActionBtn.add(btnAddToCart);
+
+        JPanel pDetailRight = new JPanel(new BorderLayout(0, 10));
+        pDetailRight.setOpaque(false);
+        pDetailRight.add(pInfo, BorderLayout.CENTER);
+        pDetailRight.add(pActionBtn, BorderLayout.SOUTH);
 
         pDetail.add(lbProductImage, BorderLayout.WEST);
-        pDetail.add(pBottomRight, BorderLayout.CENTER);
+        pDetail.add(pDetailRight, BorderLayout.CENTER);
 
         panel.add(pFilter, BorderLayout.NORTH);
         panel.add(scrollTable, BorderLayout.CENTER);
@@ -186,7 +225,12 @@ public class SellingPanel extends JPanel {
         pTopRight.add(pActions, BorderLayout.SOUTH);
 
         String[] cartHeaders = {"Tên sản phẩm", "SL", "Đơn giá", "Thành tiền"};
-        cartModel = new DefaultTableModel(cartHeaders, 0);
+        cartModel = new DefaultTableModel(cartHeaders, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         tblCart = new JTable(cartModel);
         tblCart.setRowHeight(30);
         styleTable(tblCart);
@@ -227,15 +271,16 @@ public class SellingPanel extends JPanel {
         return panel;
     }
 
-    private JPanel createDetailLabel(String title, String value) {
+    private JPanel createDetailLabel(String title, JComponent value) {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
+
         JLabel lbTitle = new JLabel(title);
         lbTitle.setForeground(Color.GRAY);
-        JLabel lbValue = new JLabel(value);
-        lbValue.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
         p.add(lbTitle, BorderLayout.NORTH);
-        p.add(lbValue, BorderLayout.CENTER);
+        p.add(value, BorderLayout.CENTER);
         return p;
     }
 
@@ -269,7 +314,7 @@ public class SellingPanel extends JPanel {
     }
 
     private void styleTable(JTable table) {
-        javax.swing.table.JTableHeader header = table.getTableHeader();
+        JTableHeader header = table.getTableHeader();
         header.setBackground(Color.decode("#114732"));
         header.setForeground(Color.WHITE);
         header.setFont(new Font("Segoe UI", Font.BOLD, 15));
@@ -285,5 +330,47 @@ public class SellingPanel extends JPanel {
         table.getColumnModel().getColumn(columnIndex).setPreferredWidth(width);
         table.getColumnModel().getColumn(columnIndex).setMinWidth(width);
          table.getColumnModel().getColumn(columnIndex).setMaxWidth(width);
+    }
+
+    private void loadCategoriesToComBoBox() {
+        List<CategoryDTO> list = categoryBUS.selectAllCategories();
+        list.add(0, new CategoryDTO(0, "Tất cả thể loại"));
+        cboCategory.updateData(list);
+    }
+
+    private void loadAuthorsToComboBox() {
+        List<AuthorDTO> list = authorBUS.selectAllAuthors();
+        list.add(0, new AuthorDTO(0, "Tất cả tác giả", "Tất cả tác giả"));
+        cboAuthor.updateData(list);
+    }
+
+    private void loadBookTable() {
+        listBooks = bookBUS.selectAllBooks();
+        productModel.setRowCount(0);
+
+        for (BookDTO book : listBooks) {
+            productModel.addRow(new Object[]{
+                    book.getBookId(),
+                    book.getBookName(),
+                    book.getCategoryName(),
+                    formatter.format(book.getSellingPrice()) + "đ",
+                    book.getQuantity()
+                    });
+        }
+    }
+
+    private void fillProductDetail() {
+        int selectedRow = tblProduct.getSelectedRow();
+        if (selectedRow == -1) return;
+
+        String name = tblProduct.getValueAt(selectedRow, 0).toString();
+        String category = tblProduct.getValueAt(selectedRow, 1).toString();
+        String price = tblProduct.getValueAt(selectedRow, 2).toString();
+        String quantity = tblProduct.getValueAt(selectedRow, 3).toString();
+
+        lbBookName.setText(name);
+        lbCategory.setText(category);
+        lbPrice.setText(price);
+        lbQuantity.setText(quantity);
     }
 }

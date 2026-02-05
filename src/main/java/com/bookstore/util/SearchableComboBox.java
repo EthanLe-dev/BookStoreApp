@@ -6,35 +6,23 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchableComboBox extends JComboBox<String> {
-    private List<String> originalItems;
+public class SearchableComboBox<E> extends JComboBox<E> {
+    private List<E> originalItems;
     private boolean isFiltering = false;
 
-    public SearchableComboBox(List<String> items) {
+    public SearchableComboBox() {
+        this.originalItems = new ArrayList<>();
+        initUI();
+    }
+
+    public SearchableComboBox(List<E> items) {
         this.originalItems = new ArrayList<>(items);
         initUI();
     }
 
-    public SearchableComboBox(String[] items) {
-        this.originalItems = new ArrayList<>();
-        for (String s : items) {
-            this.originalItems.add(s);
-        }
-        initUI();
-    }
-
-    @Override
-    public void setSelectedItem(Object anObject) {
-        if (isFiltering) {
-            return;
-        }
-
-        super.setSelectedItem(anObject);
-    }
-
     private void initUI() {
         setEditable(true);
-        setModel(new DefaultComboBoxModel<>(originalItems.toArray(new String[0])));
+        updateModel(originalItems);
 
         JTextField textEditor = (JTextField) this.getEditor().getEditorComponent();
             textEditor.addKeyListener(new KeyAdapter() {
@@ -50,16 +38,15 @@ public class SearchableComboBox extends JComboBox<String> {
 
     private void filter(String textInput) {
         isFiltering = true;
+        List<E> filteredItems = new ArrayList<>();
 
-        List<String> filteredItems = new ArrayList<>();
-        for (String item : originalItems) {
-            if (item.toLowerCase().contains(textInput.toLowerCase())) {
+        for (E item : originalItems) {
+            if (item.toString().toLowerCase().contains(textInput.toLowerCase())) {
                 filteredItems.add(item);
             }
         }
 
-        DefaultComboBoxModel<String> newModel = new DefaultComboBoxModel<>(filteredItems.toArray(new String[0]));
-        setModel(newModel);
+        updateModel(filteredItems);
 
         JTextField textEditor = (JTextField) this.getEditor().getEditorComponent();
         textEditor.setText(textInput);
@@ -69,12 +56,27 @@ public class SearchableComboBox extends JComboBox<String> {
         } else {
             hidePopup();
         }
-
         isFiltering = false;
     }
 
-    public void updateData(List<String> newItems) {
+    private void updateModel(List<E> items) {
+        DefaultComboBoxModel<E> model = new DefaultComboBoxModel<>();
+        for (E item : items) {
+            model.addElement(item);
+        }
+        super.setModel(model);
+    }
+
+    public void updateData(List<E> newItems) {
         this.originalItems = new ArrayList<>(newItems);
-        setModel(new DefaultComboBoxModel<>(originalItems.toArray(new String[0])));
+        updateModel(originalItems);
+    }
+
+    @Override
+    public void setSelectedItem(Object object) {
+        if (isFiltering) {
+            return;
+        }
+        super.setSelectedItem(object);
     }
 }
