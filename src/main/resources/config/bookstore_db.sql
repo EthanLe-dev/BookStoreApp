@@ -23,7 +23,7 @@ create table action (
 
 create table category (
 	category_id int auto_increment primary key,
-    category_name varchar(100) unique not null,
+    category_name varchar(100) unique not null
 );
 
 create table author (
@@ -102,7 +102,7 @@ create table book (
 );
 
 create table book_author (
-	book_id int auto_increment not null,
+	book_id int not null,
     author_id int not null,
     primary key (book_id, author_id),
     foreign key (book_id) references book(book_id),
