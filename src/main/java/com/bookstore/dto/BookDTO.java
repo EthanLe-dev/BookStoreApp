@@ -1,10 +1,14 @@
 package com.bookstore.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BookDTO {
     private int bookId;
     private String bookName;
     private double sellingPrice;
     private int quantity;
+    private List<Integer> authorIdsList = new ArrayList<>();
     private String translator;
     private String image;
     private String description;
@@ -61,6 +65,25 @@ public class BookDTO {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public List<Integer> getAuthorIdsList() {
+        return authorIdsList;
+    }
+
+    public void setAuthorIdsFromString(String ids) {
+        this.authorIdsList.clear();
+        if (ids != null && !ids.isEmpty()) {
+            String[] parts = ids.split(",");
+            for (String s : parts) {
+                try {
+                    this.authorIdsList.add(Integer.parseInt(s.trim()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     public String getTranslator() {

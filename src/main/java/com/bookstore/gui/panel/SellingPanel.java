@@ -13,10 +13,13 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.text.DecimalFormat;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +62,7 @@ public class SellingPanel extends JPanel {
         loadCategoriesToComBoBox();
         loadAuthorsToComboBox();
         loadBookTable();
+        addEvents();
     }
 
     private JPanel createLeftPanel() {
@@ -350,17 +354,7 @@ public class SellingPanel extends JPanel {
 
     private void loadBookTable() {
         listBooks = bookBUS.selectAllBooks();
-        productModel.setRowCount(0);
-
-        for (BookDTO book : listBooks) {
-            productModel.addRow(new Object[]{
-                    book.getBookId(),
-                    book.getBookName(),
-                    book.getCategoryName(),
-                    MoneyFormatter.toVND(book.getSellingPrice()),
-                    book.getQuantity()
-                    });
-        }
+        updateProductTable(listBooks);
     }
 
     private void fillProductDetail() {
@@ -406,5 +400,89 @@ public class SellingPanel extends JPanel {
         lbProductImage.setIcon(null);
         lbProductImage.setText("Chưa có ảnh");
         lbProductImage.setBackground(Color.decode("#06b962"));
+    }
+
+    private void filterBooks() {
+        String keyword = txtSearch.getText().trim().toLowerCase();
+        CategoryDTO selectedCate = (CategoryDTO) cboCategory.getSelectedItem();
+        int cateId = (selectedCate != null) ? selectedCate.getCategoryId() : 0;
+        AuthorDTO selectedAuthor = (AuthorDTO) cboAuthor.getSelectedItem();
+        int authorId = (selectedAuthor != null) ? selectedAuthor.getAuthorId() : 0;
+        double minPrice = 0;
+        double maxPrice = Double.MAX_VALUE;
+
+        try {
+            if (!txtPriceFrom.getText().trim().isEmpty()) {
+                minPrice = MoneyFormatter.toDouble(txtPriceFrom.getText());
+            }
+            if (!txtPriceTo.getText().trim().isEmpty()) {
+                maxPrice = MoneyFormatter.toDouble(txtPriceTo.getText());
+            }
+        } catch (Exception e) {
+
+        }
+
+        List<BookDTO> filteredList = new ArrayList<>();
+
+        for (BookDTO book : listBooks) {
+            boolean matchKeyword = keyword.isEmpty() || book.getBookName().toLowerCase().contains(keyword) || String.valueOf(book.getBookId()).contains(keyword);
+            boolean matchCate = (cateId == 0) || (book.getCategoryId() == cateId);
+            boolean matchAuthor = (authorId == 0) || (book.getAuthorIdsList().contains(authorId));
+            boolean matchPrice = (book.getSellingPrice() >= minPrice && book.getSellingPrice() <= maxPrice);
+
+            if (matchKeyword && matchCate && matchAuthor && matchPrice) {
+                filteredList.add(book);
+            }
+        }
+        updateProductTable(filteredList);
+    }
+
+    private void updateProductTable(List<BookDTO> list) {
+        productModel.setRowCount(0);
+        for (BookDTO book : list) {
+            productModel.addRow(new Object[]{
+                    book.getBookId(),
+                    book.getBookName(),
+                    book.getCategoryName(),
+                    MoneyFormatter.toVND(book.getSellingPrice()),
+                    book.getQuantity()
+            });
+        }
+    }
+
+    private void addEvents() {
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filterBooks();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filterBooks();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filterBooks();
+            }
+        });
+
+        cboCategory.addActionListener(e -> filterBooks());
+        cboAuthor.addActionListener(e -> filterBooks());
+
+        txtPriceTo.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterBooks();
+            }
+        });
+
+        txtPriceFrom.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterBooks();
+            }
+        });
     }
 }
