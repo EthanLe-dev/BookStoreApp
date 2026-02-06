@@ -137,7 +137,7 @@ public class SellingPanel extends JPanel {
         lbCategory = new JLabel("-");
         lbPrice = new JLabel("-");
         lbQuantity = new JLabel("-");
-        Font lbDetailFont = new Font(AppConstant.FONT_NAME, Font.BOLD, 16);
+        Font lbDetailFont = new Font(AppConstant.FONT_NAME, Font.BOLD, 15);
         lbBookName.setFont(lbDetailFont);
         lbCategory.setFont(lbDetailFont);
         lbPrice.setFont(lbDetailFont);
@@ -451,6 +451,23 @@ public class SellingPanel extends JPanel {
     }
 
     private void addEvents() {
+        cboCategory.addActionListener(e -> filterBooks());
+        cboAuthor.addActionListener(e -> filterBooks());
+
+        txtPriceTo.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterBooks();
+            }
+        });
+
+        txtPriceFrom.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterBooks();
+            }
+        });
+
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -468,21 +485,8 @@ public class SellingPanel extends JPanel {
             }
         });
 
-        cboCategory.addActionListener(e -> filterBooks());
-        cboAuthor.addActionListener(e -> filterBooks());
+        btnViewBookDetail.addActionListener(e -> {
 
-        txtPriceTo.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                filterBooks();
-            }
-        });
-
-        txtPriceFrom.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                filterBooks();
-            }
         });
     }
 }
