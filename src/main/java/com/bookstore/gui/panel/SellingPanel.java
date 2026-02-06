@@ -6,6 +6,8 @@ import com.bookstore.bus.CategoryBUS;
 import com.bookstore.dto.AuthorDTO;
 import com.bookstore.dto.BookDTO;
 import com.bookstore.dto.CategoryDTO;
+import com.bookstore.util.AppConstant;
+import com.bookstore.util.MoneyFormatter;
 import com.bookstore.util.SearchableComboBox;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -38,7 +40,6 @@ public class SellingPanel extends JPanel {
     private BookBUS bookBUS = new BookBUS();
 
     private List<BookDTO> listBooks = new ArrayList<>();
-    private DecimalFormat formatter = new DecimalFormat("###,###,###");
 
     public SellingPanel() {
         initUI();
@@ -126,13 +127,13 @@ public class SellingPanel extends JPanel {
         lbProductImage.setOpaque(true);
         lbProductImage.setBackground(Color.decode("#06b962"));
         lbProductImage.setForeground(Color.BLACK);
-        lbProductImage.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lbProductImage.setFont(new Font(AppConstant.FONT_NAME, Font.PLAIN, 14));
 
         lbBookName = new JLabel("Chọn sản phẩm");
         lbCategory = new JLabel("-");
         lbPrice = new JLabel("-");
         lbQuantity = new JLabel("-");
-        Font lbDetailFont = new Font("Segoe UI", Font.BOLD, 16);
+        Font lbDetailFont = new Font(AppConstant.FONT_NAME, Font.BOLD, 16);
         lbBookName.setFont(lbDetailFont);
         lbCategory.setFont(lbDetailFont);
         lbPrice.setFont(lbDetailFont);
@@ -146,14 +147,14 @@ public class SellingPanel extends JPanel {
         pInfo.add(createDetailLabel("Số lượng tồn:", lbQuantity));
 
         btnViewBookDetail = new JButton("Xem chi tiết");
-        btnViewBookDetail.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnViewBookDetail.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 15));
         btnViewBookDetail.setForeground(Color.WHITE);
         btnViewBookDetail.setBackground(Color.decode("#114732"));
         btnViewBookDetail.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnViewBookDetail.putClientProperty(FlatClientProperties.STYLE, "arc: 10; hoverBackground: #00A364;");
 
         btnAddToCart = new JButton("Thêm vào hóa đơn");
-        btnAddToCart.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        btnAddToCart.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 15));
         btnAddToCart.setForeground(Color.WHITE);
         btnAddToCart.setBackground(Color.decode("#114732"));
         btnAddToCart.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -255,7 +256,7 @@ public class SellingPanel extends JPanel {
         pSummary.add(createSummaryRow("Giảm giá thành viên:", "0đ", false));
         pSummary.add(createSummaryRow("CÒN LẠI:", "160.000đ", true));
         btnPay = new JButton("Hoàn thành");
-        btnPay.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        btnPay.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 18));
         btnPay.setForeground(Color.WHITE);
         btnPay.setBackground(Color.decode("#114732"));
         btnPay.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -280,7 +281,7 @@ public class SellingPanel extends JPanel {
 
         JLabel lbTitle = new JLabel(title);
         lbTitle.setForeground(Color.GRAY);
-        lbTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lbTitle.setFont(new Font(AppConstant.FONT_NAME, Font.PLAIN, 14));
 
         p.add(lbTitle, BorderLayout.NORTH);
         p.add(value, BorderLayout.CENTER);
@@ -289,7 +290,7 @@ public class SellingPanel extends JPanel {
 
     private JButton createActionButton(String text, String colorHex) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 14));
         btn.setForeground(Color.WHITE);
         btn.setBackground(Color.decode(colorHex));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -301,10 +302,10 @@ public class SellingPanel extends JPanel {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
         JLabel lbTitle = new JLabel(title);
-        lbTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbTitle.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 14));
 
         JLabel lbValue = new JLabel(value);
-        lbValue.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lbValue.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 16));
 
         if (isRed) {
             lbTitle.setForeground(Color.RED);
@@ -320,7 +321,7 @@ public class SellingPanel extends JPanel {
         JTableHeader header = table.getTableHeader();
         header.setBackground(Color.decode("#114732"));
         header.setForeground(Color.WHITE);
-        header.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        header.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 15));
         header.setPreferredSize(new Dimension(header.getWidth(), 40));
 
         table.setRowHeight(35);
@@ -356,7 +357,7 @@ public class SellingPanel extends JPanel {
                     book.getBookId(),
                     book.getBookName(),
                     book.getCategoryName(),
-                    formatter.format(book.getSellingPrice()) + "đ",
+                    MoneyFormatter.toVND(book.getSellingPrice()),
                     book.getQuantity()
                     });
         }
@@ -381,7 +382,7 @@ public class SellingPanel extends JPanel {
 
         lbBookName.setText(selectedBook.getBookName());
         lbCategory.setText(selectedBook.getCategoryName());
-        lbPrice.setText(formatter.format(selectedBook.getSellingPrice()) + "đ");
+        lbPrice.setText(MoneyFormatter.toVND(selectedBook.getSellingPrice()));
         lbQuantity.setText(String.valueOf(selectedBook.getQuantity()));
 
         String imageName = selectedBook.getImage();
