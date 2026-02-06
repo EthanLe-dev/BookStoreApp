@@ -102,6 +102,7 @@ public class SellingPanel extends JPanel {
         };
         tblProduct = new JTable(productModel);
         tblProduct.setRowHeight(30);
+        tblProduct.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         styleTable(tblProduct);
         setColumnWidth(tblProduct, 1, 200);
         setColumnWidth(tblProduct, 3, 100);
@@ -121,11 +122,11 @@ public class SellingPanel extends JPanel {
         pDetail.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
         lbProductImage = new JLabel("Ảnh", SwingConstants.CENTER);
-        lbProductImage.setPreferredSize(new Dimension(100, 120));
+        lbProductImage.setPreferredSize(new Dimension(110, 150));
         lbProductImage.setOpaque(true);
-        lbProductImage.setBackground(Color.decode("#4DD0E1"));
-        lbProductImage.setForeground(Color.WHITE);
-        lbProductImage.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lbProductImage.setBackground(Color.decode("#06b962"));
+        lbProductImage.setForeground(Color.BLACK);
+        lbProductImage.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         lbBookName = new JLabel("Chọn sản phẩm");
         lbCategory = new JLabel("-");
@@ -234,6 +235,7 @@ public class SellingPanel extends JPanel {
         };
         tblCart = new JTable(cartModel);
         tblCart.setRowHeight(30);
+        tblCart.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         styleTable(tblCart);
         setColumnWidth(tblCart, 1, 40);
         setColumnWidth(tblCart, 2,100);
@@ -367,7 +369,7 @@ public class SellingPanel extends JPanel {
         int modelRow = tblProduct.convertRowIndexToModel(selectedRow);
         int bookId = (int) productModel.getValueAt(modelRow, 0);
 
-        BookDTO selectedBook = new BookDTO();
+        BookDTO selectedBook = null;
         for (BookDTO book : listBooks) {
             if (book.getBookId() == bookId) {
                 selectedBook = book;
@@ -375,14 +377,33 @@ public class SellingPanel extends JPanel {
             }
         }
 
-        String name = tblProduct.getValueAt(selectedRow, 0).toString();
-        String category = tblProduct.getValueAt(selectedRow, 1).toString();
-        String price = tblProduct.getValueAt(selectedRow, 2).toString();
-        String quantity = tblProduct.getValueAt(selectedRow, 3).toString();
+        if (selectedBook == null) return;
 
-        lbBookName.setText(name);
-        lbCategory.setText(category);
-        lbPrice.setText(price);
-        lbQuantity.setText(quantity);
+        lbBookName.setText(selectedBook.getBookName());
+        lbCategory.setText(selectedBook.getCategoryName());
+        lbPrice.setText(formatter.format(selectedBook.getSellingPrice()) + "đ");
+        lbQuantity.setText(String.valueOf(selectedBook.getQuantity()));
+
+        String imageName = selectedBook.getImage();
+        if (imageName != null && !imageName.trim().isEmpty()) {
+            String imagePath = "data/book_covers/" + imageName;
+            ImageIcon imageIcon = new ImageIcon(imagePath);
+
+            if (imageIcon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                Image image = imageIcon.getImage().getScaledInstance(110, 150, Image.SCALE_SMOOTH);
+                lbProductImage.setIcon(new ImageIcon(image));
+                lbProductImage.setText("");
+            } else {
+                setDefaultImage();
+            }
+        } else {
+            setDefaultImage();
+        }
+    }
+
+    private void setDefaultImage() {
+        lbProductImage.setIcon(null);
+        lbProductImage.setText("Chưa có ảnh");
+        lbProductImage.setBackground(Color.decode("#06b962"));
     }
 }
