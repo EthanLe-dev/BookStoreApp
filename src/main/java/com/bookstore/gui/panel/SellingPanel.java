@@ -93,7 +93,7 @@ public class SellingPanel extends JPanel {
         txtSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, searchIcon);
         pFilter.add(txtSearch);
 
-        String[] headers = {"Tên sản phẩm", "Thể loại", "Đơn giá", "SL"};
+        String[] headers = {"Mã", "Tên sản phẩm", "Thể loại", "Đơn giá", "SL"};
         productModel = new DefaultTableModel(headers, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -103,19 +103,15 @@ public class SellingPanel extends JPanel {
         tblProduct = new JTable(productModel);
         tblProduct.setRowHeight(30);
         styleTable(tblProduct);
-        tblProduct.getColumnModel().removeColumn(tblProduct.getColumnModel().getColumn(0));
         setColumnWidth(tblProduct, 1, 200);
         setColumnWidth(tblProduct, 3, 100);
         setColumnWidth(tblProduct, 4, 50);
+        tblProduct.getColumnModel().removeColumn(tblProduct.getColumnModel().getColumn(0));
         tblProduct.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tblProduct.getSelectedRow() != -1) {
                 fillProductDetail();
             }
         });
-
-        productModel.addRow(new Object[]{"Doraemon Tập 1", "Truyện tranh", "25.000", 142});
-        productModel.addRow(new Object[]{"Mắt Biếc", "Tiểu thuyết", "110.000", 50});
-        productModel.addRow(new Object[]{"Conan Tập 100", "Truyện tranh", "25.000", 20});
 
         JScrollPane scrollTable = new JScrollPane(tblProduct);
         scrollTable.getViewport().setBackground(Color.WHITE);
@@ -135,6 +131,11 @@ public class SellingPanel extends JPanel {
         lbCategory = new JLabel("-");
         lbPrice = new JLabel("-");
         lbQuantity = new JLabel("-");
+        Font lbDetailFont = new Font("Segoe UI", Font.BOLD, 16);
+        lbBookName.setFont(lbDetailFont);
+        lbCategory.setFont(lbDetailFont);
+        lbPrice.setFont(lbDetailFont);
+        lbQuantity.setFont(lbDetailFont);
 
         JPanel pInfo = new JPanel(new GridLayout(2, 2, 10, 5));
         pInfo.setBackground(Color.WHITE);
@@ -144,14 +145,14 @@ public class SellingPanel extends JPanel {
         pInfo.add(createDetailLabel("Số lượng tồn:", lbQuantity));
 
         btnViewBookDetail = new JButton("Xem chi tiết");
-        btnViewBookDetail.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnViewBookDetail.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btnViewBookDetail.setForeground(Color.WHITE);
         btnViewBookDetail.setBackground(Color.decode("#114732"));
         btnViewBookDetail.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnViewBookDetail.putClientProperty(FlatClientProperties.STYLE, "arc: 10; hoverBackground: #00A364;");
 
         btnAddToCart = new JButton("Thêm vào hóa đơn");
-        btnAddToCart.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnAddToCart.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btnAddToCart.setForeground(Color.WHITE);
         btnAddToCart.setBackground(Color.decode("#114732"));
         btnAddToCart.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -362,6 +363,17 @@ public class SellingPanel extends JPanel {
     private void fillProductDetail() {
         int selectedRow = tblProduct.getSelectedRow();
         if (selectedRow == -1) return;
+
+        int modelRow = tblProduct.convertRowIndexToModel(selectedRow);
+        int bookId = (int) productModel.getValueAt(modelRow, 0);
+
+        BookDTO selectedBook = new BookDTO();
+        for (BookDTO book : listBooks) {
+            if (book.getBookId() == bookId) {
+                selectedBook = book;
+                break;
+            }
+        }
 
         String name = tblProduct.getValueAt(selectedRow, 0).toString();
         String category = tblProduct.getValueAt(selectedRow, 1).toString();
