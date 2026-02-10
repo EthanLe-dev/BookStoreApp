@@ -76,7 +76,6 @@ public class AuthorDAO {
                 e.printStackTrace();
             }
             return false;
-
     }
 
     public boolean exists(String authorname){
@@ -115,6 +114,27 @@ public class AuthorDAO {
             e.printStackTrace();
             }
         return list;
+    }
+
+    public AuthorDTO getAuthorById(int id){
+        String sql = "SELECT * FROM author WHERE author_id = ?";
+        try(Connection c = DatabaseConnection.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql);){
+
+            ps.setInt(1, id);
+            try(ResultSet rs = ps.executeQuery();){
+                if(rs.next()){
+                    return new AuthorDTO(
+                            rs.getInt("author_id"),
+                            rs.getString("author_name"),
+                            rs.getString("nationality")
+                    );
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<AuthorDTO> getByBookId(int bookId) {
