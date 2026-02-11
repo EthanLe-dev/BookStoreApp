@@ -3,6 +3,7 @@ package com.bookstore.gui.main;
 import com.bookstore.bus.AccountBUS;
 import com.bookstore.dto.EmployeeDTO;
 import com.bookstore.util.AppConstant;
+import com.bookstore.util.SharedData;
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
@@ -124,10 +125,13 @@ public class LoginFrame extends JFrame {
 
         try {
             EmployeeDTO employee = accountBUS.login(username, password);
-            JOptionPane.showMessageDialog(this, "Xin chào " + employee.getEmployeeName() + "!",
-                    "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            this.dispose();
-            new MainFrame(employee).setVisible(true);
+            if (employee != null) {
+                SharedData.currentUser = employee;
+                JOptionPane.showMessageDialog(this, "Xin chào " + employee.getEmployeeName() + "!",
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose();
+                new MainFrame().setVisible(true);
+            }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
                     "Đăng nhập thất bại", JOptionPane.ERROR_MESSAGE);

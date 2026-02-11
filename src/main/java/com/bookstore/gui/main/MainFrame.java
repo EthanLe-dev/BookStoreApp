@@ -1,8 +1,9 @@
 package com.bookstore.gui.main;
 
 import com.bookstore.dto.EmployeeDTO;
-import com.bookstore.gui.panel.SellingTab;
+import com.bookstore.gui.panel.SellingTab.SellingTabbedPane;
 import com.bookstore.util.AppConstant;
+import com.bookstore.util.SharedData;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -14,10 +15,8 @@ public class MainFrame extends JFrame {
     private JPanel mainContentPanel, sidebarPanel;
     private JButton btnLogout, btnSelling, btnProduct, btnPrice, btnImport, btnInventory, btnBill, btnEmployee, btnStats, btnAccount;
     private JPanel welcomePanel;
-    private EmployeeDTO employee;
 
-    public MainFrame(EmployeeDTO employee) {
-        this.employee = employee;
+    public MainFrame() {
         initUI();
 
         applyAuthorization();
@@ -40,7 +39,7 @@ public class MainFrame extends JFrame {
 
         welcomePanel = createWelcomePanel();
         mainContentPanel.add(welcomePanel, "WELCOME");
-        mainContentPanel.add(new SellingTab(), "SELLING");
+        mainContentPanel.add(new SellingTabbedPane(), "SELLING");
         mainContentPanel.add(createDummyPanel("Sản Phẩm"), "PRODUCT");
         mainContentPanel.add(createDummyPanel("Giá Bán"), "PRICE");
         mainContentPanel.add(createDummyPanel("Phiếu Nhập"), "IMPORT");
@@ -70,12 +69,11 @@ public class MainFrame extends JFrame {
 
         gbc.gridy++;
 
-        String username = employee.getEmployeeName();
+        String username = SharedData.currentUser.getEmployeeName();
         JLabel lbWelcome2 = new JLabel("Xin chào, " + username + "!");
         lbWelcome2.setFont(new Font(AppConstant.FONT_NAME, Font.PLAIN, 28));
         lbWelcome2.setForeground(Color.GRAY);
         panel.add(lbWelcome2, gbc);
-
         return panel;
     }
 
@@ -225,9 +223,9 @@ public class MainFrame extends JFrame {
     }
 
     private void applyAuthorization() {
-        if (employee == null) return;
+        if (SharedData.currentUser == null) return;
 
-        int roleId = employee.getRoleId();
+        int roleId = SharedData.currentUser.getRoleId();
 
         if (roleId == 2) {
             btnProduct.setVisible(false);
@@ -236,11 +234,5 @@ public class MainFrame extends JFrame {
             btnImport.setVisible(false);
             btnAccount.setVisible(false);
         }
-    }
-
-    public static void main(String[] args) {
-        EmployeeDTO employee = new EmployeeDTO();
-        FlatLightLaf.setup();
-        new MainFrame(employee).setVisible(true);
     }
 }

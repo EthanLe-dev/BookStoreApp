@@ -1,4 +1,4 @@
-package com.bookstore.gui.panel;
+package com.bookstore.gui.panel.SellingTab;
 
 import javax.swing.*;
 

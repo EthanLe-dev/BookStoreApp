@@ -1,11 +1,11 @@
-package com.bookstore.gui.panel;
+package com.bookstore.gui.panel.SellingTab;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
 
-public class SellingTab extends JPanel {
-    public SellingTab() {
+public class SellingTabbedPane extends JPanel {
+    public SellingTabbedPane() {
         initUI();
     }
 

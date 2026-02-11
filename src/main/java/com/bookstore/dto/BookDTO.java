@@ -9,6 +9,7 @@ public class BookDTO {
     private double sellingPrice;
     private int quantity;
     private List<Integer> authorIdsList = new ArrayList<>();
+    private String authorsName;
     private String translator;
     private String image;
     private String description;
@@ -83,7 +84,14 @@ public class BookDTO {
                 }
             }
         }
+    }
 
+    public String getAuthorsName() {
+        return authorsName == null ? "" : authorsName;
+    }
+
+    public void setAuthorsName(String authorsName) {
+        this.authorsName = authorsName;
     }
 
     public String getTranslator() {
