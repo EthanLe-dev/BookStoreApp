@@ -286,7 +286,7 @@ public class BookFormDialog extends JDialog {
         tagPanel.removeAll();
         
         // Selected tags as chips
-        JPanel chipsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        JPanel chipsPanel = new JPanel(new GridLayout(0, 3, 8, 8));
         chipsPanel.setBackground(BG_COLOR);
         chipsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
@@ -302,7 +302,7 @@ public class BookFormDialog extends JDialog {
         tagPanel.add(Box.createVerticalStrut(8));
         
         // Add tag buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 4, 8, 8));
         buttonPanel.setBackground(BG_COLOR);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
@@ -446,7 +446,7 @@ public class BookFormDialog extends JDialog {
         contentPanel.add(title, BorderLayout.NORTH);
         
         // Tag chips
-        JPanel chipsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        JPanel chipsPanel = new JPanel(new GridLayout(0, 3, 8, 8));
         chipsPanel.setBackground(BG_COLOR);
         
         Map<String, JToggleButton> toggleButtons = new HashMap<>();

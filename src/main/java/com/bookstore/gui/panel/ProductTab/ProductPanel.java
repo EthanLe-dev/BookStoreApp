@@ -32,6 +32,8 @@ public class ProductPanel extends JPanel {
     private DefaultTableModel tableModel;
     private Set<String> selectedTags = new HashSet<>();
     private JButton tagFilterButton;
+    private JLabel noResultsLabel;
+    private JScrollPane scrollPane;
     private BookBUS bookBUS;
     private AuthorBUS authorBUS;
     private CategoryBUS categoryBUS;
@@ -233,7 +235,7 @@ public class ProductPanel extends JPanel {
         filtersPanel.add(Box.createVerticalStrut(12));
         
         // Row for Tag filter and Reset button
-        JPanel buttonRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel buttonRow = new JPanel(new GridLayout(0, 5, 8, 8));
         buttonRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // Tag filter button
@@ -296,6 +298,18 @@ public class ProductPanel extends JPanel {
         bookTable.setSelectionBackground(Color.decode("#E8F5E9"));
         bookTable.setSelectionForeground(Color.BLACK);
         
+        // Fix: Ensure row is selected immediately on first click
+        bookTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int row = bookTable.rowAtPoint(e.getPoint());
+                int col = bookTable.columnAtPoint(e.getPoint());
+                if (row >= 0 && col >= 0) {
+                    bookTable.setRowSelectionInterval(row, row);
+                }
+            }
+        });
+        
         bookTable.getTableHeader().setReorderingAllowed(false);
         bookTable.getTableHeader().setResizingAllowed(false);
         
@@ -307,13 +321,13 @@ public class ProductPanel extends JPanel {
         header.setPreferredSize(new Dimension(header.getWidth(), 45));
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
         
-        // Column widths
-        bookTable.getColumnModel().getColumn(0).setPreferredWidth(250);
+        // Column widths - Make action column smaller
+        bookTable.getColumnModel().getColumn(0).setPreferredWidth(280);
         bookTable.getColumnModel().getColumn(1).setPreferredWidth(180);
         bookTable.getColumnModel().getColumn(2).setPreferredWidth(150);
         bookTable.getColumnModel().getColumn(3).setPreferredWidth(150);
         bookTable.getColumnModel().getColumn(4).setPreferredWidth(120);
-        bookTable.getColumnModel().getColumn(5).setPreferredWidth(180);
+        bookTable.getColumnModel().getColumn(5).setPreferredWidth(150);
         
         // Custom renderers
         bookTable.getColumnModel().getColumn(0).setCellRenderer(new BookCellRenderer());
@@ -328,10 +342,31 @@ public class ProductPanel extends JPanel {
         bookTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
         bookTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
         
-        JScrollPane scrollPane = new JScrollPane(bookTable);
+        scrollPane = new JScrollPane(bookTable);
         scrollPane.setBorder(null);
         
-        tablePanel.add(scrollPane, BorderLayout.CENTER);
+        noResultsLabel = new JLabel("Không có kết quả tương thích", SwingConstants.CENTER);
+        noResultsLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        noResultsLabel.setForeground(Color.decode("#999999"));
+        noResultsLabel.setVisible(false);
+        
+        JPanel tableContainer = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+            }
+        };
+        tableContainer.setLayout(new OverlayLayout(tableContainer));
+        
+        // Center panel for no results label
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(noResultsLabel);
+        
+        tableContainer.add(centerPanel);
+        tableContainer.add(scrollPane);
+        
+        tablePanel.add(tableContainer, BorderLayout.CENTER);
         
         return tablePanel;
     }
@@ -342,15 +377,25 @@ public class ProductPanel extends JPanel {
 
     private void loadTableData(List<BookDTO> books) {
         tableModel.setRowCount(0);
-        for (BookDTO book : books) {
-            Object[] row = new Object[6];
-            row[0] = book;
-            row[1] = getAuthorNamesForBook(book);
-            row[2] = getCategoryName(book.getCategoryId());
-            row[3] = getSupplierName(book.getSupplierId());
-            row[4] = book.getStatus() == 1 ? "Đang bán" : "Ngừng bán";
-            row[5] = book;
-            tableModel.addRow(row);
+        
+        // FIX 1: Show/hide no results label
+        if (books.isEmpty()) {
+            noResultsLabel.setVisible(true);
+            bookTable.setVisible(false);
+        } else {
+            noResultsLabel.setVisible(false);
+            bookTable.setVisible(true);
+            
+            for (BookDTO book : books) {
+                Object[] row = new Object[6];
+                row[0] = book;
+                row[1] = getAuthorNamesForBook(book);
+                row[2] = getCategoryName(book.getCategoryId());
+                row[3] = getSupplierName(book.getSupplierId());
+                row[4] = book.getStatus() == 1 ? "Đang bán" : "Ngừng bán";
+                row[5] = book;
+                tableModel.addRow(row);
+            }
         }
     }
 
@@ -637,58 +682,95 @@ public class ProductPanel extends JPanel {
         }
     }
 
+    // FIX 4: Improved book detail dialog with better layout
     private void showBookDetail(BookDTO book) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết sách", true);
         dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(620, 450);
+        dialog.setSize(700, 550);
         dialog.setLocationRelativeTo(this);
 
-        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
-        contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        JPanel contentPanel = new JPanel(new BorderLayout(15, 15));
+        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
+        // Title at top
         JLabel title = new JLabel(book.getBookName());
-        title.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         contentPanel.add(title, BorderLayout.NORTH);
 
+        // Main panel with image on left and details on right
+        JPanel mainPanel = new JPanel(new BorderLayout(15, 0));
+        
+        // Image on left - adjusted to proper book cover ratio (2:3 ratio)
+        JLabel imageLabel = new JLabel();
+        imageLabel.setPreferredSize(new Dimension(160, 240)); // 2:3 ratio
+        imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        imageLabel.setVerticalAlignment(JLabel.TOP);
+        imageLabel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        imageLabel.setIcon(new ImageIcon(getBookCoverImage(book, 160, 240)));
+        mainPanel.add(imageLabel, BorderLayout.WEST);
+        
+        // Details on right
         JPanel detailsPanel = new JPanel();
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
-        JLabel imageLabel = new JLabel();
-        imageLabel.setPreferredSize(new Dimension(140, 200));
-        imageLabel.setMaximumSize(new Dimension(140, 200));
-        imageLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        imageLabel.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
-        imageLabel.setIcon(new ImageIcon(getBookCoverImage(book, 140, 200)));
-        detailsPanel.add(imageLabel);
-        detailsPanel.add(Box.createVerticalStrut(10));
-        addDetailRow(detailsPanel, "Tác giả", getAuthorNamesForBook(book));
-        addDetailRow(detailsPanel, "Thể loại", getCategoryName(book.getCategoryId()));
-        addDetailRow(detailsPanel, "Nhà cung cấp", getSupplierName(book.getSupplierId()));
-        addDetailRow(detailsPanel, "Trạng thái", book.getStatus() == 1 ? "Đang bán" : "Ngừng bán");
-        addDetailRow(detailsPanel, "Dịch giả", book.getTranslator() == null ? "" : book.getTranslator());
-        addDetailRow(detailsPanel, "Tags", book.getTagDetail() == null ? "" : book.getTagDetail());
+        detailsPanel.setBorder(new EmptyBorder(0, 0, 0, 0));
+        
+        addDetailRow(detailsPanel, "Tác giả:", getAuthorNamesForBook(book));
+        addDetailRow(detailsPanel, "Thể loại:", getCategoryName(book.getCategoryId()));
+        addDetailRow(detailsPanel, "Nhà cung cấp:", getSupplierName(book.getSupplierId()));
+        addDetailRow(detailsPanel, "Trạng thái:", book.getStatus() == 1 ? "Đang bán" : "Ngừng bán");
+        addDetailRow(detailsPanel, "Dịch giả:", book.getTranslator() == null || book.getTranslator().trim().isEmpty() ? "Không có" : book.getTranslator());
+        addDetailRow(detailsPanel, "Tags:", book.getTagDetail() == null || book.getTagDetail().trim().isEmpty() ? "Không có" : book.getTagDetail());
+        
+        mainPanel.add(detailsPanel, BorderLayout.CENTER);
+        contentPanel.add(mainPanel, BorderLayout.CENTER);
 
-        JScrollPane scrollPane = new JScrollPane(detailsPanel);
-        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        // Description at bottom
+        if (book.getDescription() != null && !book.getDescription().trim().isEmpty()) {
+            JPanel descPanel = new JPanel(new BorderLayout(5, 5));
+            
+            JLabel descLabel = new JLabel("Mô tả:");
+            descLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            descPanel.add(descLabel, BorderLayout.NORTH);
+            
+            JTextArea descArea = new JTextArea(book.getDescription());
+            descArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            descArea.setLineWrap(true);
+            descArea.setWrapStyleWord(true);
+            descArea.setEditable(false);
+            descArea.setBackground(Color.decode("#F5F5F5"));
+            descArea.setBorder(new EmptyBorder(10, 10, 10, 10));
+            
+            JScrollPane descScroll = new JScrollPane(descArea);
+            descScroll.setPreferredSize(new Dimension(0, 120));
+            descScroll.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+            descPanel.add(descScroll, BorderLayout.CENTER);
+            
+            contentPanel.add(descPanel, BorderLayout.SOUTH);
+        }
 
+        // Button panel
         JButton closeButton = createStyledButton("Đóng", BUTTON_COLOR);
         closeButton.addActionListener(e -> dialog.dispose());
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.add(closeButton);
-        contentPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        dialog.add(contentPanel);
+        
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(buttonPanel, BorderLayout.EAST);
+        
+        dialog.add(contentPanel, BorderLayout.CENTER);
+        dialog.add(bottomPanel, BorderLayout.SOUTH);
         dialog.setVisible(true);
     }
 
     private void addDetailRow(JPanel panel, String label, String value) {
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 5));
+        JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 8));
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
         JLabel lblLabel = new JLabel(label);
         lblLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lblLabel.setPreferredSize(new Dimension(100, 20));
+        lblLabel.setPreferredSize(new Dimension(110, 20));
         
         JLabel lblValue = new JLabel(value);
         lblValue.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -823,60 +905,125 @@ public class ProductPanel extends JPanel {
         return createBookPlaceholder(width, height);
     }
 
-    private String truncateToMaxLines(String text, Font font, int maxWidth, int maxLines, Graphics graphics) {
+    // FIX 2: Completely rewritten text truncation - smarter word wrapping
+    private String truncateText(String text, Font font, int maxWidth, int maxLines) {
         if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
-        FontMetrics fm = graphics != null ? graphics.getFontMetrics(font) : getFontMetrics(font);
+        FontMetrics fm = getFontMetrics(font);
+        String[] words = text.split("\\s+");
         List<String> lines = new ArrayList<>();
         StringBuilder currentLine = new StringBuilder();
+        boolean needsEllipsis = false;
 
-        for (String word : text.split("\\s+")) {
-            String candidate = currentLine.length() == 0 ? word : currentLine + " " + word;
-            if (fm.stringWidth(candidate) <= maxWidth) {
-                currentLine = new StringBuilder(candidate);
+        for (int i = 0; i < words.length; i++) {
+            String word = words[i];
+            String testLine;
+            
+            if (currentLine.length() == 0) {
+                testLine = word;
             } else {
-                if (currentLine.length() > 0) {
+                testLine = currentLine + " " + word;
+            }
+            
+            int width = fm.stringWidth(testLine);
+            
+            if (width <= maxWidth) {
+                // Word fits on current line
+                currentLine = new StringBuilder(testLine);
+                
+                // If this is the last word and we haven't exceeded max lines
+                if (i == words.length - 1 && lines.size() < maxLines) {
                     lines.add(currentLine.toString());
-                    currentLine = new StringBuilder(word);
-                } else {
-                    lines.add(appendEllipsis(word, fm, maxWidth));
                     currentLine = new StringBuilder();
                 }
-
-                if (lines.size() == maxLines) {
-                    return lines.get(0) + "<br>" + appendEllipsis(lines.get(1), fm, maxWidth);
+            } else {
+                // Word doesn't fit on current line
+                if (currentLine.length() > 0) {
+                    // Save current line and start new one
+                    lines.add(currentLine.toString());
+                    
+                    if (lines.size() >= maxLines) {
+                        // We've hit the line limit
+                        needsEllipsis = true;
+                        break;
+                    }
+                    
+                    currentLine = new StringBuilder(word);
+                    
+                    // If this is the last word
+                    if (i == words.length - 1) {
+                        if (lines.size() < maxLines) {
+                            lines.add(currentLine.toString());
+                        } else {
+                            needsEllipsis = true;
+                        }
+                        currentLine = new StringBuilder();
+                    }
+                } else {
+                    // Single word is too long for one line
+                    String truncatedWord = truncateSingleWord(word, fm, maxWidth - fm.stringWidth("..."));
+                    lines.add(truncatedWord + "...");
+                    needsEllipsis = false; // Already added ellipsis
+                    
+                    if (lines.size() >= maxLines) {
+                        break;
+                    }
+                    currentLine = new StringBuilder();
                 }
             }
         }
 
+        // Handle any remaining text
         if (currentLine.length() > 0) {
-            lines.add(currentLine.toString());
+            if (lines.size() < maxLines) {
+                lines.add(currentLine.toString());
+            } else {
+                needsEllipsis = true;
+            }
         }
 
-        if (maxLines == 1 || lines.size() <= 1) {
-            return lines.isEmpty() ? "" : lines.get(0);
+        // Build result
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < lines.size(); i++) {
+            if (i > 0) {
+                result.append("<br>");
+            }
+            
+            String line = lines.get(i);
+            
+            // Add ellipsis to last line if needed
+            if (i == lines.size() - 1 && needsEllipsis) {
+                String withEllipsis = line + "...";
+                if (fm.stringWidth(withEllipsis) > maxWidth) {
+                    // Need to truncate to fit ellipsis
+                    line = truncateSingleWord(line, fm, maxWidth - fm.stringWidth("..."));
+                }
+                result.append(line).append("...");
+            } else {
+                result.append(line);
+            }
         }
-        if (lines.size() == maxLines) {
-            return lines.get(0) + "<br>" + lines.get(1);
-        }
-        return lines.get(0) + "<br>" + appendEllipsis(lines.get(1), fm, maxWidth);
+
+        return result.toString();
     }
 
-    private String appendEllipsis(String text, FontMetrics fm, int maxWidth) {
-        String ellipsis = "...";
-        if (fm.stringWidth(text) <= maxWidth && !text.endsWith(ellipsis)) {
-            return text;
+    private String truncateSingleWord(String word, FontMetrics fm, int maxWidth) {
+        if (fm.stringWidth(word) <= maxWidth) {
+            return word;
         }
-
-        String result = text;
-        while (!result.isEmpty() && fm.stringWidth(result + ellipsis) > maxWidth) {
-            result = result.substring(0, result.length() - 1);
+        
+        StringBuilder truncated = new StringBuilder();
+        for (char c : word.toCharArray()) {
+            String test = truncated.toString() + c;
+            if (fm.stringWidth(test) > maxWidth) {
+                break;
+            }
+            truncated.append(c);
         }
-        return result + ellipsis;
+        return truncated.toString();
     }
-
 
     // Cell renderers
     class BookCellRenderer extends DefaultTableCellRenderer {
@@ -906,9 +1053,14 @@ public class ProductPanel extends JPanel {
             
             panel.add(imageLabel, BorderLayout.WEST);
             
-            String truncatedName = truncateToMaxLines(book.getBookName(), new Font("Segoe UI", Font.BOLD, 13), 170, 2, table.getGraphics());
+            // FIX 2: Better text truncation with proper width (account for image + padding)
+            int availableWidth = table.getColumnModel().getColumn(0).getWidth() - 80; // 50px image + 30px padding
+            String truncatedName = truncateText(book.getBookName(), new Font("Segoe UI", Font.BOLD, 13), availableWidth, 2);
+            
             JLabel nameLabel = new JLabel("<html><b>" + truncatedName + "</b></html>");
             nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            nameLabel.setVerticalAlignment(SwingConstants.CENTER); // Center vertically in cell
+            nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
             panel.add(nameLabel, BorderLayout.CENTER);
             
             return panel;
@@ -942,13 +1094,19 @@ public class ProductPanel extends JPanel {
         }
     }
 
+    // FIX 3: Fixed action cell renderer alignment
     class ActionCellRenderer extends JPanel implements TableCellRenderer {
         private JButton editButton;
         private JButton viewButton;
         
         public ActionCellRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER, 8, 20));
+            setLayout(new GridBagLayout()); // Use GridBagLayout for perfect centering
             setOpaque(true);
+            
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.insets = new Insets(0, 4, 0, 4);
             
             editButton = new JButton("Sửa");
             editButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -964,8 +1122,9 @@ public class ProductPanel extends JPanel {
             viewButton.setBorder(BorderFactory.createEmptyBorder(5, 12, 5, 12));
             viewButton.setFocusPainted(false);
             
-            add(editButton);
-            add(viewButton);
+            add(editButton, gbc);
+            gbc.gridx = 1;
+            add(viewButton, gbc);
         }
         
         @Override
@@ -982,6 +1141,7 @@ public class ProductPanel extends JPanel {
         }
     }
 
+    // FIX 3: Fixed action cell editor alignment and selection issue
     class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
         private JPanel panel;
         private JButton editButton;
@@ -989,7 +1149,13 @@ public class ProductPanel extends JPanel {
         private BookDTO currentBook;
         
         public ActionCellEditor() {
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+            panel = new JPanel(new GridBagLayout()); // Use GridBagLayout for perfect centering
+            panel.setOpaque(true);
+            
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.insets = new Insets(0, 4, 0, 4);
             
             editButton = new JButton("Sửa");
             editButton.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -999,8 +1165,9 @@ public class ProductPanel extends JPanel {
             editButton.setFocusPainted(false);
             editButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             editButton.addActionListener(e -> {
-                showEditBookDialog(currentBook);
                 fireEditingStopped();
+                // Use SwingUtilities.invokeLater to ensure dialog opens after cell editing stops
+                SwingUtilities.invokeLater(() -> showEditBookDialog(currentBook));
             });
             
             viewButton = new JButton("Xem");
@@ -1011,18 +1178,24 @@ public class ProductPanel extends JPanel {
             viewButton.setFocusPainted(false);
             viewButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             viewButton.addActionListener(e -> {
-                showBookDetail(currentBook);
                 fireEditingStopped();
+                // Use SwingUtilities.invokeLater to ensure dialog opens after cell editing stops
+                SwingUtilities.invokeLater(() -> showBookDetail(currentBook));
             });
             
-            panel.add(editButton);
-            panel.add(viewButton);
+            panel.add(editButton, gbc);
+            gbc.gridx = 1;
+            panel.add(viewButton, gbc);
         }
         
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
             currentBook = (BookDTO) value;
+            
+            // Always highlight the row when editing
+            panel.setBackground(table.getSelectionBackground());
+            
             return panel;
         }
         
