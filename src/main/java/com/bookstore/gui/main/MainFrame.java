@@ -2,7 +2,11 @@ package com.bookstore.gui.main;
 
 import com.bookstore.dto.EmployeeDTO;
 import com.bookstore.gui.panel.SellingPanel;
+<<<<<<< HEAD
 import com.bookstore.gui.panel.ProductTab.ProductTab;
+=======
+import com.bookstore.util.AppConstant;
+>>>>>>> c9f576da359d5b47073f51647c636eda55f9d418
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import javax.swing.*;
@@ -63,15 +67,15 @@ public class MainFrame extends JFrame {
         gbc.insets = new Insets(10, 0, 20, 0);
 
         JLabel lbWelcome1 = new JLabel("Chào Mừng Trở Lại Hệ Thống");
-        lbWelcome1.setFont(new Font("Segoe UI", Font.BOLD, 40));
-        lbWelcome1.setForeground(Color.decode("#062D1E"));
+        lbWelcome1.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 40));
+        lbWelcome1.setForeground(Color.decode(AppConstant.GREEN_COLOR_CODE));
         panel.add(lbWelcome1, gbc);
 
         gbc.gridy++;
 
         String username = employee.getEmployeeName();
         JLabel lbWelcome2 = new JLabel("Xin chào, " + username + "!");
-        lbWelcome2.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+        lbWelcome2.setFont(new Font(AppConstant.FONT_NAME, Font.PLAIN, 28));
         lbWelcome2.setForeground(Color.GRAY);
         panel.add(lbWelcome2, gbc);
 
@@ -81,19 +85,19 @@ public class MainFrame extends JFrame {
     private JPanel createSidebar() {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(Color.decode("#062D1E"));
+        sidebar.setBackground(Color.decode(AppConstant.GREEN_COLOR_CODE));
         sidebar.setPreferredSize(new Dimension(200, getHeight()));
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
         JLabel lbHeader1 = new JLabel("Quản Lý");
         lbHeader1.setForeground(Color.WHITE);
-        lbHeader1.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        lbHeader1.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 30));
         lbHeader1.setAlignmentX(Component.CENTER_ALIGNMENT);
         lbHeader1.setHorizontalAlignment(SwingConstants.CENTER);
 
         JLabel lbHeader2 = new JLabel("Bán Sách");
         lbHeader2.setForeground(Color.WHITE);
-        lbHeader2.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        lbHeader2.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 30));
         lbHeader2.setAlignmentX(Component.CENTER_ALIGNMENT);
         lbHeader2.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -118,9 +122,9 @@ public class MainFrame extends JFrame {
         btnAccount = createMenuButton("Tài Khoản", "account_icon.svg");
 
         btnLogout = new JButton("Đăng xuất");
-        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnLogout.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 16));
         btnLogout.setForeground(Color.WHITE);
-        btnLogout.setBackground(Color.decode("#062D1E"));
+        btnLogout.setBackground(Color.decode(AppConstant.GREEN_COLOR_CODE));
         btnLogout.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btnLogout.setMaximumSize(new Dimension(200, 70));
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -187,9 +191,9 @@ public class MainFrame extends JFrame {
 
     private JButton createMenuButton(String text, String iconName) {
         JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btn.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 16));
         btn.setForeground(Color.WHITE);
-        btn.setBackground(Color.decode("#062D1E"));
+        btn.setBackground(Color.decode(AppConstant.GREEN_COLOR_CODE));
         btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         btn.setMaximumSize(new Dimension(200, 70));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -217,7 +221,7 @@ public class MainFrame extends JFrame {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBackground(Color.WHITE);
         JLabel lb = new JLabel(text);
-        lb.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        lb.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 40));
         lb.setForeground(Color.LIGHT_GRAY);
         p.add(lb);
         return p;

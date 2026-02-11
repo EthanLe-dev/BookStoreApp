@@ -22,3 +22,9 @@ public class ProductTab extends JPanel {
     }
     
 }
+
+// 1. Sửa nếu lọc ko có kết quả thì hiện trong table là ko có kết quả trùng khớp
+
+// 2. Nút thao tác nhấn 1 lần bị nảy lên
+
+// 3. Form Book đã bị sửa làm ko còn như trước. Không cần giá và số lượng. Cần có hình ảnh.

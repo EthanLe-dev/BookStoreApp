@@ -1,5 +1,6 @@
 package com.bookstore.gui.panel;
 
+import com.bookstore.util.AppConstant;
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +23,7 @@ public class SellingPanel extends JPanel {
     private JPanel createContentPanel(String text) {
         JPanel p = new JPanel(new GridBagLayout());
         JLabel lb = new JLabel(text);
-        lb.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lb.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 24));
         lb.setForeground(Color.GRAY);
         p.add(lb);
         return p;

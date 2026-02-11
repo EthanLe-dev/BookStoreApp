@@ -8,6 +8,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
+import com.bookstore.util.SearchableComboBox;
 import com.bookstore.bus.*;
 import com.bookstore.dto.*;
 import com.bookstore.dao.BookAuthorDAO;
@@ -21,9 +22,9 @@ public class ProductPanel extends JPanel {
     
     // Components
     private JTextField searchField;
-    private SearchableComboBox authorCombo;
-    private SearchableComboBox categoryCombo;
-    private SearchableComboBox supplierCombo;
+    private SearchableComboBox<AuthorDTO> authorCombo;
+    private SearchableComboBox<CategoryDTO> categoryCombo;
+    private SearchableComboBox<SupplierDTO> supplierCombo;
     private JComboBox<String> statusCombo;
     private JTable bookTable;
     private DefaultTableModel tableModel;
@@ -214,7 +215,7 @@ public class ProductPanel extends JPanel {
         // Row 0, Col 1: Author ComboBox
         gbc.gridx = 1;
         gbc.weightx = 1;
-        authorCombo = new SearchableComboBox(getAuthorNames());
+        authorCombo = new SearchableComboBox<>(getAuthorNames());
         authorCombo.setPreferredSize(new Dimension(220, 35));
         authorCombo.addActionListener(e -> filterBooks());
         gridPanel.add(authorCombo, gbc);
@@ -227,7 +228,7 @@ public class ProductPanel extends JPanel {
         // Row 0, Col 3: Category ComboBox
         gbc.gridx = 3;
         gbc.weightx = 1;
-        categoryCombo = new SearchableComboBox(getCategoryNames());
+        categoryCombo = new SearchableComboBox<>(getCategoryNames());
         categoryCombo.setPreferredSize(new Dimension(220, 35));
         categoryCombo.addActionListener(e -> filterBooks());
         gridPanel.add(categoryCombo, gbc);
@@ -241,7 +242,7 @@ public class ProductPanel extends JPanel {
         // Row 1, Col 1: Supplier ComboBox
         gbc.gridx = 1;
         gbc.weightx = 1;
-        supplierCombo = new SearchableComboBox(getSupplierNames());
+        supplierCombo = new SearchableComboBox<>(getSupplierNames());
         supplierCombo.setPreferredSize(new Dimension(220, 35));
         supplierCombo.addActionListener(e -> filterBooks());
         gridPanel.add(supplierCombo, gbc);

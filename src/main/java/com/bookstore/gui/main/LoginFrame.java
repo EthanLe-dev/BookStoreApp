@@ -2,6 +2,7 @@ package com.bookstore.gui.main;
 
 import com.bookstore.bus.AccountBUS;
 import com.bookstore.dto.EmployeeDTO;
+import com.bookstore.util.AppConstant;
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +25,7 @@ public class LoginFrame extends JFrame {
 
     private void initComponents() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(Color.decode("#062D1E"));
+        mainPanel.setBackground(Color.decode(AppConstant.GREEN_COLOR_CODE));
         add(mainPanel);
 
         JPanel loginCard = new JPanel();
@@ -34,7 +35,7 @@ public class LoginFrame extends JFrame {
         loginCard.putClientProperty(FlatClientProperties.STYLE, "arc: 20;");
 
         JLabel lbTitle = new JLabel("Đăng nhập");
-        lbTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lbTitle.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 28));
         lbTitle.setForeground(Color.BLACK);
         lbTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -91,7 +92,7 @@ public class LoginFrame extends JFrame {
         panel.setMaximumSize(new Dimension(1000, 70));
 
         JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setFont(new Font(AppConstant.FONT_NAME, Font.BOLD, 14));
 
         panel.add(label, BorderLayout.NORTH);
         panel.add(field, BorderLayout.CENTER);
@@ -100,7 +101,7 @@ public class LoginFrame extends JFrame {
     }
 
     private void styleField(JComponent field) {
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setFont(new Font(AppConstant.FONT_NAME, Font.PLAIN, 14));
         field.putClientProperty(FlatClientProperties.STYLE,
                 "arc: 10;" +
                 "borderColor: #CCCCCC;" +
