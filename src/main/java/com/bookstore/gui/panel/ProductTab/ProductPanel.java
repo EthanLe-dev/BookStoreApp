@@ -37,10 +37,10 @@ public class ProductPanel extends JPanel {
     private BookAuthorDAO bookAuthorDAO;
 
     // Data
-    private List<Book> allBooks;
-    private List<Author> authors;
-    private List<Category> categories;
-    private List<Supplier> suppliers;
+    private List<BookDTO> allBooks;
+    private List<AuthorDTO> authors;
+    private List<CategoryDTO> categories;
+    private List<SupplierDTO> suppliers;
     private Set<String> allTags;
 
     public ProductPanel() {
@@ -60,45 +60,17 @@ public class ProductPanel extends JPanel {
     private void loadDataFromDatabase() {
         try {
             // 1. Load Authors
-            List<AuthorDTO> authorsFromDB = authorBUS.selectAll();
-            authors = new ArrayList<>();
-            for (AuthorDTO a : authorsFromDB) {
-                authors.add(new Author(a.getAuthorId(), a.getAuthorName()));
-            }
+            authors = authorBUS.selectAll();
             
             // 2. Load Categories
-            List<CategoryDTO> categoriesFromDB = categoryBUS.selectAll();
-            categories = new ArrayList<>();
-            for (CategoryDTO c : categoriesFromDB) {
-                categories.add(new Category(c.getCategoryId(), c.getCategoryName()));
-            }
+            categories = categoryBUS.selectAll();
             
             // 3. Load Suppliers
-            List<SupplierDTO> suppliersFromDB = supplierBUS.selectAll();
-            suppliers = new ArrayList<>();
-            for (SupplierDTO s : suppliersFromDB) {
-                suppliers.add(new Supplier(s.getSupplierId(), s.getSupplierName()));
-            }
+            suppliers = supplierBUS.selectAll();
             
             // 4. Load Books
             List<BookDTO> booksFromDB = bookBUS.selectAll();
-            allBooks = new ArrayList<>();
-            for (BookDTO b : booksFromDB) {
-                allBooks.add(new Book(
-                    b.getBookId(),
-                    b.getBookName(),
-                    b.getSellingPrice(),
-                    b.getQuantity(),
-                    b.getTranslator(),
-                    b.getImage(),
-                    b.getDescription(),
-                    b.getStatus(),
-                    b.getCategoryId(),
-                    b.getSupplierId(),
-                    b.getTagDetail(),
-                    new ArrayList<>(b.getAuthorIdsList())
-                ));
-            }
+            allBooks = new ArrayList<>(booksFromDB);
             
             // 5. Load all tags từ books
             allTags = new HashSet<>();
@@ -366,15 +338,15 @@ public class ProductPanel extends JPanel {
         loadTableData(allBooks);
     }
 
-    private void loadTableData(List<Book> books) {
+    private void loadTableData(List<BookDTO> books) {
         tableModel.setRowCount(0);
-        for (Book book : books) {
+        for (BookDTO book : books) {
             Object[] row = new Object[6];
             row[0] = book;
             row[1] = getAuthorNamesForBook(book);
-            row[2] = getCategoryName(book.categoryId);
-            row[3] = getSupplierName(book.supplierId);
-            row[4] = book.status == 1 ? "Đang bán" : "Ngừng bán";
+            row[2] = getCategoryName(book.getCategoryId());
+            row[3] = getSupplierName(book.getSupplierId());
+            row[4] = book.getStatus() == 1 ? "Đang bán" : "Ngừng bán";
             row[5] = book;
             tableModel.addRow(row);
         }
@@ -391,11 +363,11 @@ public class ProductPanel extends JPanel {
         String selectedCategory = selectedCategoryObj != null ? selectedCategoryObj.toString() : "";
         String selectedSupplier = selectedSupplierObj != null ? selectedSupplierObj.toString() : "";
         
-        List<Book> filtered = new ArrayList<>();
+        List<BookDTO> filtered = new ArrayList<>();
         
-        for (Book book : allBooks) {
+        for (BookDTO book : allBooks) {
             // Search filter
-            if (!searchText.isEmpty() && !book.bookName.toLowerCase().contains(searchText)) {
+            if (!searchText.isEmpty() && !book.getBookName().toLowerCase().contains(searchText)) {
                 continue;
             }
             
@@ -409,14 +381,14 @@ public class ProductPanel extends JPanel {
             
             // Category filter
             if (!selectedCategory.isEmpty() && !selectedCategory.equals("Tất cả thể loại")) {
-                if (!getCategoryName(book.categoryId).equals(selectedCategory)) {
+                if (!getCategoryName(book.getCategoryId()).equals(selectedCategory)) {
                     continue;
                 }
             }
             
             // Supplier filter
             if (!selectedSupplier.isEmpty() && !selectedSupplier.equals("Tất cả nhà cung cấp")) {
-                if (!getSupplierName(book.supplierId).equals(selectedSupplier)) {
+                if (!getSupplierName(book.getSupplierId()).equals(selectedSupplier)) {
                     continue;
                 }
             }
@@ -424,7 +396,7 @@ public class ProductPanel extends JPanel {
             // Status filter
             if (!selectedStatus.equals("Tất cả trạng thái")) {
                 int requiredStatus = selectedStatus.equals("Đang bán") ? 1 : 0;
-                if (book.status != requiredStatus) {
+                if (book.getStatus() != requiredStatus) {
                     continue;
                 }
             }
@@ -432,8 +404,8 @@ public class ProductPanel extends JPanel {
             // Tag filter
             if (!selectedTags.isEmpty()) {
                 boolean hasTag = false;
-                if (book.tagDetail != null) {
-                    String[] bookTags = book.tagDetail.split(",");
+                if (book.getTagDetail() != null) {
+                    String[] bookTags = book.getTagDetail().split(",");
                     for (String tag : bookTags) {
                         if (selectedTags.contains(tag.trim())) {
                             hasTag = true;
@@ -565,29 +537,29 @@ public class ProductPanel extends JPanel {
         dialog.setVisible(true);
         
         if (dialog.isSaved()) {
-            Book newBook = dialog.getBook();
+            BookDTO newBook = dialog.getBook();
             
             try {
                 BookDTO bookDTO = new BookDTO();
-                bookDTO.setBookName(newBook.bookName);
-                bookDTO.setSellingPrice(newBook.sellingPrice);
-                bookDTO.setQuantity(newBook.quantity);
-                bookDTO.setTranslator(newBook.translator);
-                bookDTO.setImage(newBook.image);
-                bookDTO.setDescription(newBook.description);
-                bookDTO.setStatus(newBook.status);
-                bookDTO.setCategoryId(newBook.categoryId);
-                bookDTO.setSupplierId(newBook.supplierId);
-                bookDTO.setTagDetail(newBook.tagDetail);
-                if (newBook.authorIds != null) {
-                    bookDTO.getAuthorIdsList().addAll(newBook.authorIds);
+                bookDTO.setBookName(newBook.getBookName());
+                bookDTO.setSellingPrice(newBook.getSellingPrice());
+                bookDTO.setQuantity(newBook.getQuantity());
+                bookDTO.setTranslator(newBook.getTranslator());
+                bookDTO.setImage(newBook.getImage());
+                bookDTO.setDescription(newBook.getDescription());
+                bookDTO.setStatus(newBook.getStatus());
+                bookDTO.setCategoryId(newBook.getCategoryId());
+                bookDTO.setSupplierId(newBook.getSupplierId());
+                bookDTO.setTagDetail(newBook.getTagDetail());
+                if (newBook.getAuthorIdsList() != null) {
+                    bookDTO.getAuthorIdsList().addAll(newBook.getAuthorIdsList());
                 }
                 
                 String result = bookBUS.addBook(bookDTO);
                 
                 if (result.contains("thành công")) {
-                    if (newBook.authorIds != null && !newBook.authorIds.isEmpty()) {
-                        bookAuthorDAO.addAuthorsToBook(bookDTO.getBookId(), newBook.authorIds);
+                    if (newBook.getAuthorIdsList() != null && !newBook.getAuthorIdsList().isEmpty()) {
+                        bookAuthorDAO.addAuthorsToBook(bookDTO.getBookId(), newBook.getAuthorIdsList());
                     }
                     loadDataFromDatabase();
                     filterBooks();
@@ -608,7 +580,7 @@ public class ProductPanel extends JPanel {
         }
     }
 
-    private void showEditBookDialog(Book book) {
+    private void showEditBookDialog(BookDTO book) {
         BookFormDialog dialog = new BookFormDialog(
             (Frame) SwingUtilities.getWindowAncestor(this), 
             "Chỉnh sửa sách", 
@@ -618,31 +590,31 @@ public class ProductPanel extends JPanel {
         dialog.setVisible(true);
         
         if (dialog.isSaved()) {
-            Book updatedBook = dialog.getBook();
+            BookDTO updatedBook = dialog.getBook();
             
             try {
                 BookDTO bookDTO = new BookDTO();
-                bookDTO.setBookId(book.bookId);
-                bookDTO.setBookName(updatedBook.bookName);
-                bookDTO.setSellingPrice(updatedBook.sellingPrice);
-                bookDTO.setQuantity(updatedBook.quantity);
-                bookDTO.setTranslator(updatedBook.translator);
-                bookDTO.setImage(updatedBook.image);
-                bookDTO.setDescription(updatedBook.description);
-                bookDTO.setStatus(updatedBook.status);
-                bookDTO.setCategoryId(updatedBook.categoryId);
-                bookDTO.setSupplierId(updatedBook.supplierId);
-                bookDTO.setTagDetail(updatedBook.tagDetail);
-                if (updatedBook.authorIds != null) {
-                    bookDTO.getAuthorIdsList().addAll(updatedBook.authorIds);
+                bookDTO.setBookId(book.getBookId());
+                bookDTO.setBookName(updatedBook.getBookName());
+                bookDTO.setSellingPrice(updatedBook.getSellingPrice());
+                bookDTO.setQuantity(updatedBook.getQuantity());
+                bookDTO.setTranslator(updatedBook.getTranslator());
+                bookDTO.setImage(updatedBook.getImage());
+                bookDTO.setDescription(updatedBook.getDescription());
+                bookDTO.setStatus(updatedBook.getStatus());
+                bookDTO.setCategoryId(updatedBook.getCategoryId());
+                bookDTO.setSupplierId(updatedBook.getSupplierId());
+                bookDTO.setTagDetail(updatedBook.getTagDetail());
+                if (updatedBook.getAuthorIdsList() != null) {
+                    bookDTO.getAuthorIdsList().addAll(updatedBook.getAuthorIdsList());
                 }
                 
                 String result = bookBUS.updateBook(bookDTO);
                 
                 if (result.contains("thành công")) {
-                    bookAuthorDAO.removeAllAuthorsFromBook(book.bookId);
-                    if (updatedBook.authorIds != null && !updatedBook.authorIds.isEmpty()) {
-                        bookAuthorDAO.addAuthorsToBook(book.bookId, updatedBook.authorIds);
+                    bookAuthorDAO.removeAllAuthorsFromBook(book.getBookId());
+                    if (updatedBook.getAuthorIdsList() != null && !updatedBook.getAuthorIdsList().isEmpty()) {
+                        bookAuthorDAO.addAuthorsToBook(book.getBookId(), updatedBook.getAuthorIdsList());
                     }
                     
                     loadDataFromDatabase();
@@ -664,7 +636,7 @@ public class ProductPanel extends JPanel {
         }
     }
 
-    private void showBookDetail(Book book) {
+    private void showBookDetail(BookDTO book) {
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Chi tiết sách", true);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.setSize(520, 420);
@@ -673,7 +645,7 @@ public class ProductPanel extends JPanel {
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
         contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        JLabel title = new JLabel(book.bookName);
+        JLabel title = new JLabel(book.getBookName());
         title.setFont(new Font("Segoe UI", Font.BOLD, 16));
         contentPanel.add(title, BorderLayout.NORTH);
 
@@ -681,13 +653,13 @@ public class ProductPanel extends JPanel {
         detailsPanel.setLayout(new BoxLayout(detailsPanel, BoxLayout.Y_AXIS));
 
         addDetailRow(detailsPanel, "Tác giả", getAuthorNamesForBook(book));
-        addDetailRow(detailsPanel, "Thể loại", getCategoryName(book.categoryId));
-        addDetailRow(detailsPanel, "Nhà cung cấp", getSupplierName(book.supplierId));
-        addDetailRow(detailsPanel, "Giá bán", String.valueOf(book.sellingPrice));
-        addDetailRow(detailsPanel, "Số lượng", String.valueOf(book.quantity));
-        addDetailRow(detailsPanel, "Trạng thái", book.status == 1 ? "Đang bán" : "Ngừng bán");
-        addDetailRow(detailsPanel, "Dịch giả", book.translator == null ? "" : book.translator);
-        addDetailRow(detailsPanel, "Tags", book.tagDetail == null ? "" : book.tagDetail);
+        addDetailRow(detailsPanel, "Thể loại", getCategoryName(book.getCategoryId()));
+        addDetailRow(detailsPanel, "Nhà cung cấp", getSupplierName(book.getSupplierId()));
+        addDetailRow(detailsPanel, "Giá bán", String.valueOf(book.getSellingPrice()));
+        addDetailRow(detailsPanel, "Số lượng", String.valueOf(book.getQuantity()));
+        addDetailRow(detailsPanel, "Trạng thái", book.getStatus() == 1 ? "Đang bán" : "Ngừng bán");
+        addDetailRow(detailsPanel, "Dịch giả", book.getTranslator() == null ? "" : book.getTranslator());
+        addDetailRow(detailsPanel, "Tags", book.getTagDetail() == null ? "" : book.getTagDetail());
 
         JScrollPane scrollPane = new JScrollPane(detailsPanel);
         scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
@@ -748,8 +720,8 @@ public class ProductPanel extends JPanel {
     private List<String> getAuthorNamesList() {
         List<String> names = new ArrayList<>();
         names.add("Tất cả tác giả");
-        for (Author author : authors) {
-            names.add(author.name);
+        for (AuthorDTO author : authors) {
+            names.add(author.getAuthorName());
         }
         return names;
     }
@@ -757,8 +729,8 @@ public class ProductPanel extends JPanel {
     private List<String> getCategoryNamesList() {
         List<String> names = new ArrayList<>();
         names.add("Tất cả thể loại");
-        for (Category category : categories) {
-            names.add(category.name);
+        for (CategoryDTO category : categories) {
+            names.add(category.getCategoryName());
         }
         return names;
     }
@@ -766,23 +738,23 @@ public class ProductPanel extends JPanel {
     private List<String> getSupplierNamesList() {
         List<String> names = new ArrayList<>();
         names.add("Tất cả nhà cung cấp");
-        for (Supplier supplier : suppliers) {
-            names.add(supplier.name);
+        for (SupplierDTO supplier : suppliers) {
+            names.add(supplier.getSupplierName());
         }
         return names;
     }
 
-    private String getAuthorNamesForBook(Book book) {
-        if (book.authorIds == null || book.authorIds.isEmpty()) {
+    private String getAuthorNamesForBook(BookDTO book) {
+        if (book.getAuthorIdsList() == null || book.getAuthorIdsList().isEmpty()) {
             return "Không rõ";
         }
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < book.authorIds.size(); i++) {
-            int authorId = book.authorIds.get(i);
-            for (Author author : authors) {
-                if (author.id == authorId) {
-                    sb.append(author.name);
-                    if (i < book.authorIds.size() - 1) {
+        for (int i = 0; i < book.getAuthorIdsList().size(); i++) {
+            int authorId = book.getAuthorIdsList().get(i);
+            for (AuthorDTO author : authors) {
+                if (author.getAuthorId() == authorId) {
+                    sb.append(author.getAuthorName());
+                    if (i < book.getAuthorIdsList().size() - 1) {
                         sb.append(", ");
                     }
                     break;
@@ -793,18 +765,18 @@ public class ProductPanel extends JPanel {
     }
 
     private String getCategoryName(int categoryId) {
-        for (Category cat : categories) {
-            if (cat.id == categoryId) {
-                return cat.name;
+        for (CategoryDTO cat : categories) {
+            if (cat.getCategoryId() == categoryId) {
+                return cat.getCategoryName();
             }
         }
         return "Không rõ";
     }
 
     private String getSupplierName(int supplierId) {
-        for (Supplier sup : suppliers) {
-            if (sup.id == supplierId) {
-                return sup.name;
+        for (SupplierDTO sup : suppliers) {
+            if (sup.getSupplierId() == supplierId) {
+                return sup.getSupplierName();
             }
         }
         return "Không rõ";
@@ -839,7 +811,7 @@ public class ProductPanel extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             
-            Book book = (Book) value;
+            BookDTO book = (BookDTO) value;
             
             JPanel panel = new JPanel(new BorderLayout(10, 0));
             panel.setOpaque(true);
@@ -861,7 +833,7 @@ public class ProductPanel extends JPanel {
             
             panel.add(imageLabel, BorderLayout.WEST);
             
-            JLabel nameLabel = new JLabel("<html><b>" + book.bookName + "</b></html>");
+            JLabel nameLabel = new JLabel("<html><b>" + book.getBookName() + "</b></html>");
             nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             panel.add(nameLabel, BorderLayout.CENTER);
             
@@ -940,7 +912,7 @@ public class ProductPanel extends JPanel {
         private JPanel panel;
         private JButton editButton;
         private JButton viewButton;
-        private Book currentBook;
+        private BookDTO currentBook;
         
         public ActionCellEditor() {
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -976,76 +948,13 @@ public class ProductPanel extends JPanel {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
-            currentBook = (Book) value;
+            currentBook = (BookDTO) value;
             return panel;
         }
         
         @Override
         public Object getCellEditorValue() {
             return currentBook;
-        }
-    }
-
-    // Data classes
-    static class Book {
-        int bookId;
-        String bookName;
-        double sellingPrice;
-        int quantity;
-        String translator;
-        String image;
-        String description;
-        int status;
-        int categoryId;
-        int supplierId;
-        String tagDetail;
-        List<Integer> authorIds;
-        
-        public Book(int bookId, String bookName, double sellingPrice, int quantity,
-                String translator, String image, String description, int status,
-                int categoryId, int supplierId, String tagDetail, List<Integer> authorIds) {
-            this.bookId = bookId;
-            this.bookName = bookName;
-            this.sellingPrice = sellingPrice;
-            this.quantity = quantity;
-            this.translator = translator;
-            this.image = image;
-            this.description = description;
-            this.status = status;
-            this.categoryId = categoryId;
-            this.supplierId = supplierId;
-            this.tagDetail = tagDetail;
-            this.authorIds = authorIds;
-        }
-    }
-
-    static class Author {
-        int id;
-        String name;
-        
-        public Author(int id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-    }
-
-    static class Category {
-        int id;
-        String name;
-        
-        public Category(int id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-    }
-
-    static class Supplier {
-        int id;
-        String name;
-        
-        public Supplier(int id, String name) {
-            this.id = id;
-            this.name = name;
         }
     }
 }

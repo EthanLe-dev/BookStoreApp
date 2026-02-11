@@ -7,10 +7,16 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
+import com.bookstore.util.AppConstant;
+import com.bookstore.dto.AuthorDTO;
+import com.bookstore.dto.BookDTO;
+import com.bookstore.dto.CategoryDTO;
+import com.bookstore.dto.SupplierDTO;
+
 public class BookFormDialog extends JDialog {
-    private static final Color PRIMARY_GREEN = Color.decode("#4CAF50");
     private static final Color BG_COLOR = Color.WHITE;
     private static final Color BORDER_COLOR = Color.decode("#E0E0E0");
+    private static final Color BUTTON_COLOR = Color.decode(AppConstant.BUTTON_COLOR);
     
     private JTextField nameField;
     private JTextArea descriptionArea;
@@ -23,21 +29,21 @@ public class BookFormDialog extends JDialog {
     private JPanel tagPanel;
     private JLabel imageLabel;
     
-    private ProductPanel.Book book;
+    private BookDTO book;
     private boolean saved = false;
     
-    private List<ProductPanel.Author> authors;
-    private List<ProductPanel.Category> categories;
-    private List<ProductPanel.Supplier> suppliers;
+    private List<AuthorDTO> authors;
+    private List<CategoryDTO> categories;
+    private List<SupplierDTO> suppliers;
     private Set<String> allTags;
     
     private Set<Integer> selectedAuthorIds = new HashSet<>();
     private Set<String> selectedTags = new HashSet<>();
     
-    public BookFormDialog(Frame parent, String title, ProductPanel.Book book,
-        List<ProductPanel.Author> authors,
-        List<ProductPanel.Category> categories,
-        List<ProductPanel.Supplier> suppliers,
+    public BookFormDialog(Frame parent, String title, BookDTO book,
+        List<AuthorDTO> authors,
+        List<CategoryDTO> categories,
+        List<SupplierDTO> suppliers,
         Set<String> allTags) {
     super(parent, title, true);
     this.book = book;
@@ -204,9 +210,9 @@ public class BookFormDialog extends JDialog {
         
         // Selected authors
         for (Integer authorId : selectedAuthorIds) {
-            for (ProductPanel.Author author : authors) {
-                if (author.id == authorId) {
-                    JPanel authorChip = createRemovableChip(author.name, () -> {
+            for (AuthorDTO author : authors) {
+                if (author.getAuthorId() == authorId) {
+                    JPanel authorChip = createRemovableChip(author.getAuthorName(), () -> {
                         selectedAuthorIds.remove(authorId);
                         refreshAuthorPanel();
                     });
@@ -220,10 +226,10 @@ public class BookFormDialog extends JDialog {
         // Add author button
         JButton addAuthorButton = new JButton("+ Thêm tác giả");
         addAuthorButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        addAuthorButton.setForeground(PRIMARY_GREEN);
+        addAuthorButton.setForeground(BUTTON_COLOR);
         addAuthorButton.setBackground(BG_COLOR);
         addAuthorButton.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PRIMARY_GREEN, 1),
+            BorderFactory.createLineBorder(BUTTON_COLOR, 1),
             BorderFactory.createEmptyBorder(6, 12, 6, 12)
         ));
         addAuthorButton.setFocusPainted(false);
@@ -263,10 +269,10 @@ public class BookFormDialog extends JDialog {
         
         JButton selectTagButton = new JButton("Chọn tags");
         selectTagButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        selectTagButton.setForeground(PRIMARY_GREEN);
+        selectTagButton.setForeground(BUTTON_COLOR);
         selectTagButton.setBackground(BG_COLOR);
         selectTagButton.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PRIMARY_GREEN, 1),
+            BorderFactory.createLineBorder(BUTTON_COLOR, 1),
             BorderFactory.createEmptyBorder(6, 12, 6, 12)
         ));
         selectTagButton.setFocusPainted(false);
@@ -298,7 +304,7 @@ public class BookFormDialog extends JDialog {
         JPanel chip = new JPanel(new BorderLayout(8, 0));
         chip.setBackground(Color.decode("#E8F5E9"));
         chip.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PRIMARY_GREEN, 1),
+            BorderFactory.createLineBorder(BUTTON_COLOR, 1),
             BorderFactory.createEmptyBorder(4, 10, 4, 10)
         ));
         chip.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -344,13 +350,13 @@ public class BookFormDialog extends JDialog {
         
         Map<Integer, JCheckBox> checkBoxes = new HashMap<>();
         
-        for (ProductPanel.Author author : authors) {
-            JCheckBox cb = new JCheckBox(author.name);
+        for (AuthorDTO author : authors) {
+            JCheckBox cb = new JCheckBox(author.getAuthorName());
             cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             cb.setBackground(BG_COLOR);
-            cb.setSelected(selectedAuthorIds.contains(author.id));
+            cb.setSelected(selectedAuthorIds.contains(author.getAuthorId()));
             cb.setAlignmentX(Component.LEFT_ALIGNMENT);
-            checkBoxes.put(author.id, cb);
+            checkBoxes.put(author.getAuthorId(), cb);
             listPanel.add(cb);
             listPanel.add(Box.createVerticalStrut(5));
         }
@@ -366,7 +372,7 @@ public class BookFormDialog extends JDialog {
         JButton cancelButton = createStyledButton("Hủy", Color.decode("#757575"));
         cancelButton.addActionListener(e -> dialog.dispose());
         
-        JButton okButton = createStyledButton("Xác nhận", PRIMARY_GREEN);
+        JButton okButton = createStyledButton("Xác nhận", BUTTON_COLOR);
         okButton.addActionListener(e -> {
             selectedAuthorIds.clear();
             for (Map.Entry<Integer, JCheckBox> entry : checkBoxes.entrySet()) {
@@ -425,7 +431,7 @@ public class BookFormDialog extends JDialog {
         JButton cancelButton = createStyledButton("Hủy", Color.decode("#757575"));
         cancelButton.addActionListener(e -> dialog.dispose());
         
-        JButton okButton = createStyledButton("Xác nhận", PRIMARY_GREEN);
+        JButton okButton = createStyledButton("Xác nhận", BUTTON_COLOR);
         okButton.addActionListener(e -> {
             selectedTags.clear();
             for (Map.Entry<String, JToggleButton> entry : toggleButtons.entrySet()) {
@@ -471,7 +477,7 @@ public class BookFormDialog extends JDialog {
         
         chip.addItemListener(e -> {
             if (chip.isSelected()) {
-                chip.setBackground(PRIMARY_GREEN);
+                chip.setBackground(BUTTON_COLOR);
                 chip.setForeground(Color.WHITE);
             } else {
                 chip.setBackground(Color.decode("#F5F5F5"));
@@ -537,7 +543,7 @@ public class BookFormDialog extends JDialog {
         JButton cancelButton = createStyledButton("Hủy", Color.decode("#757575"));
         cancelButton.addActionListener(e -> dispose());
         
-        JButton saveButton = createStyledButton("Hoàn thành", PRIMARY_GREEN);
+        JButton saveButton = createStyledButton("Hoàn thành", BUTTON_COLOR);
         saveButton.addActionListener(e -> saveBook());
         
         panel.add(cancelButton);
@@ -590,28 +596,29 @@ public class BookFormDialog extends JDialog {
         
         // Create or update book
         if (book == null) {
-            book = new ProductPanel.Book(
-                0, // ID will be set by parent
-                nameField.getText().trim(),
-                0, 0, // price and quantity not used
-                translatorField.getText().trim().isEmpty() ? null : translatorField.getText().trim(),
-                null, // image
-                descriptionArea.getText().trim().isEmpty() ? null : descriptionArea.getText().trim(),
-                activeRadio.isSelected() ? 1 : 0,  // int: 1 = Đang bán, 0 = Ngừng bán
-                categories.get(categoryCombo.getSelectedIndex() - 1).id, // -1 because index 0 is "-- Chọn --"
-                suppliers.get(supplierCombo.getSelectedIndex() - 1).id, // -1 because index 0 is "-- Chọn --"
-                selectedTags.isEmpty() ? null : String.join(",", selectedTags),
-                new ArrayList<>(selectedAuthorIds)
-            );
+            book = new BookDTO();
+            book.setBookId(0);
+            book.setBookName(nameField.getText().trim());
+            book.setSellingPrice(0);
+            book.setQuantity(0);
+            book.setTranslator(translatorField.getText().trim().isEmpty() ? null : translatorField.getText().trim());
+            book.setImage(null);
+            book.setDescription(descriptionArea.getText().trim().isEmpty() ? null : descriptionArea.getText().trim());
+            book.setStatus(activeRadio.isSelected() ? 1 : 0);
+            book.setCategoryId(categories.get(categoryCombo.getSelectedIndex() - 1).getCategoryId());
+            book.setSupplierId(suppliers.get(supplierCombo.getSelectedIndex() - 1).getSupplierId());
+            book.setTagDetail(selectedTags.isEmpty() ? null : String.join(",", selectedTags));
+            book.getAuthorIdsList().addAll(selectedAuthorIds);
         } else {
-            book.bookName = nameField.getText().trim();
-            book.translator = translatorField.getText().trim().isEmpty() ? null : translatorField.getText().trim();
-            book.description = descriptionArea.getText().trim().isEmpty() ? null : descriptionArea.getText().trim();
-            book.status = activeRadio.isSelected() ? 1 : 0;  // int: 1 = Đang bán, 0 = Ngừng bán
-            book.categoryId = categories.get(categoryCombo.getSelectedIndex() - 1).id;
-            book.supplierId = suppliers.get(supplierCombo.getSelectedIndex() - 1).id;
-            book.tagDetail = selectedTags.isEmpty() ? null : String.join(",", selectedTags);
-            book.authorIds = new ArrayList<>(selectedAuthorIds);
+            book.setBookName(nameField.getText().trim());
+            book.setTranslator(translatorField.getText().trim().isEmpty() ? null : translatorField.getText().trim());
+            book.setDescription(descriptionArea.getText().trim().isEmpty() ? null : descriptionArea.getText().trim());
+            book.setStatus(activeRadio.isSelected() ? 1 : 0);  // int: 1 = Đang bán, 0 = Ngừng bán
+            book.setCategoryId(categories.get(categoryCombo.getSelectedIndex() - 1).getCategoryId());
+            book.setSupplierId(suppliers.get(supplierCombo.getSelectedIndex() - 1).getSupplierId());
+            book.setTagDetail(selectedTags.isEmpty() ? null : String.join(",", selectedTags));
+            book.getAuthorIdsList().clear();
+            book.getAuthorIdsList().addAll(selectedAuthorIds);
         }
         
         saved = true;
@@ -619,19 +626,19 @@ public class BookFormDialog extends JDialog {
     }
     
     private void loadBookData() {
-        nameField.setText(book.bookName);
-        translatorField.setText(book.translator != null ? book.translator : "");
-        descriptionArea.setText(book.description != null ? book.description : "");
+        nameField.setText(book.getBookName());
+        translatorField.setText(book.getTranslator() != null ? book.getTranslator() : "");
+        descriptionArea.setText(book.getDescription() != null ? book.getDescription() : "");
         
         // Authors
-        if (book.authorIds != null) {
-            selectedAuthorIds.addAll(book.authorIds);
+        if (book.getAuthorIdsList() != null) {
+            selectedAuthorIds.addAll(book.getAuthorIdsList());
             refreshAuthorPanel();
         }
         
         // Category - find index in categories list
         for (int i = 0; i < categories.size(); i++) {
-            if (categories.get(i).id == book.categoryId) {
+            if (categories.get(i).getCategoryId() == book.getCategoryId()) {
                 categoryCombo.setSelectedIndex(i + 1); // +1 because index 0 is "-- Chọn --"
                 break;
             }
@@ -639,22 +646,22 @@ public class BookFormDialog extends JDialog {
         
         // Supplier - find index in suppliers list
         for (int i = 0; i < suppliers.size(); i++) {
-            if (suppliers.get(i).id == book.supplierId) {
+            if (suppliers.get(i).getSupplierId() == book.getSupplierId()) {
                 supplierCombo.setSelectedIndex(i + 1); // +1 because index 0 is "-- Chọn --"
                 break;
             }
         }
         
         // Status
-        if (book.status == 1) {
+        if (book.getStatus() == 1) {
             activeRadio.setSelected(true);
         } else {
             inactiveRadio.setSelected(true);
         }
         
         // Tags
-        if (book.tagDetail != null && !book.tagDetail.isEmpty()) {
-            selectedTags.addAll(Arrays.asList(book.tagDetail.split(",")));
+        if (book.getTagDetail() != null && !book.getTagDetail().isEmpty()) {
+            selectedTags.addAll(Arrays.asList(book.getTagDetail().split(",")));
             // Trim tags
             Set<String> trimmed = new HashSet<>();
             for (String tag : selectedTags) {
@@ -669,7 +676,7 @@ public class BookFormDialog extends JDialog {
         String[] names = new String[categories.size() + 1];
         names[0] = "-- Chọn thể loại --";
         for (int i = 0; i < categories.size(); i++) {
-            names[i + 1] = categories.get(i).name;
+            names[i + 1] = categories.get(i).getCategoryName();
         }
         return names;
     }
@@ -678,7 +685,7 @@ public class BookFormDialog extends JDialog {
         String[] names = new String[suppliers.size() + 1];
         names[0] = "-- Chọn nhà cung cấp --";
         for (int i = 0; i < suppliers.size(); i++) {
-            names[i + 1] = suppliers.get(i).name;
+            names[i + 1] = suppliers.get(i).getSupplierName();
         }
         return names;
     }
@@ -734,7 +741,7 @@ public class BookFormDialog extends JDialog {
         return saved;
     }
     
-    public ProductPanel.Book getBook() {
+    public BookDTO getBook() {
         return book;
     }
 }
