@@ -7,7 +7,7 @@ create table membership_rank (
 	rank_id int auto_increment primary key,
     rank_name varchar(50) not null,
     min_point int default 0,
-    discount_percent decimal(5, 2) default 0
+    discount_percent decimal(4, 2) default 0
 );
 
 create table role (
@@ -109,13 +109,20 @@ create table book_author (
     foreign key (author_id) references author(author_id)
 );
 
-create table discount (
-	discount_id int auto_increment primary key,
-    percent decimal(3, 2) not null,
+create table promotion (
+    promotion_id int auto_increment primary key,
+    promotion_name varchar(255) not null,
+    percent decimal(5, 2) default 0,
     start_date datetime not null,
     end_date datetime not null,
-    status int default 1,
+    status int default 1
+);
+
+create table promotion_detail (
+    promotion_id int not null,
     book_id int not null,
+    primary key (promotion_id, book_id),
+    foreign key (promotion_id) references promotion(promotion_id),
     foreign key (book_id) references book(book_id)
 );
 
@@ -305,8 +312,8 @@ insert into author (author_name, nationality) values
     ('Neil Gaiman', 'Anh');
 
 insert into book (book_name, selling_price, quantity, translator, image, description, status, category_id, supplier_id, tag_detail) values
-('Bàn Có Năm Chỗ Ngồi', 55000, 0, NULL, NULL, 'Bàn có năm chỗ ngồi xoay quanh câu chuyện tình bạn giữa 5 người bạn. Đó là Huy, Hiền, Quang, Đại, Bảy – họ là năm người bạn với năm cá tính và hoàn cảnh khác nhau cùng chung trong một lớp học. Những trò nghịch ngợm trẻ con đôi khi gây ra mâu thuẫn, nhưng trên tất cả đó là những đứa trẻ ham học, giàu lòng nhân ái và biết quan tâm đến bạn bè. Cảm thông với hoàn cảnh của nhau, từng người nghĩ ra cách giúp đỡ bạn theo khả năng của mình để tình bạn ấy lớn dần theo năm tháng. Mọi thứ trong sách như đưa người đọc được sống lại cái thời còn cắp sách tới trường và tái hiện lại mọi thứ vậy.', 1, 1, 1, 'Truyện dài, Tình bạn, Thiếu nhi, Nguyễn Nhật Ánh'),
-('Thằng Quỷ Nhỏ', 70000, 0, NULL, NULL, 'Chuông reo, cả lớp xếp hàng. Nga bước ra khỏi lớp và trước khi đứng vào hàng sau lưng Hạnh, nó khẽ đưa mắt nhìn lướt qua đám con trai xếp hàng kế bên, kín đáo dò xem nhân vật nào là thằng quỷ nhỏ, nhưng nó không thể đoán định được. Những khuôn mặt vui nhộn và rạng rỡ kia chẳng có gì khả nghi. Hay "hắn" mang biệt danh đó là do "hắn" phá phách không ai chịu nổi? Nga thầm nghĩ và lại liếc sang dãy con trai, tò mò quan sát.', 1, 1, 1, 'Truyện dài, Tình bạn, Thiếu nhi, Nguyễn Nhật Ánh'),
+('Bàn Có Năm Chỗ Ngồi', 55000, 0, NULL, "bàn_có_năm_chỗ_ngồi.jpg", 'Bàn có năm chỗ ngồi xoay quanh câu chuyện tình bạn giữa 5 người bạn. Đó là Huy, Hiền, Quang, Đại, Bảy – họ là năm người bạn với năm cá tính và hoàn cảnh khác nhau cùng chung trong một lớp học. Những trò nghịch ngợm trẻ con đôi khi gây ra mâu thuẫn, nhưng trên tất cả đó là những đứa trẻ ham học, giàu lòng nhân ái và biết quan tâm đến bạn bè. Cảm thông với hoàn cảnh của nhau, từng người nghĩ ra cách giúp đỡ bạn theo khả năng của mình để tình bạn ấy lớn dần theo năm tháng. Mọi thứ trong sách như đưa người đọc được sống lại cái thời còn cắp sách tới trường và tái hiện lại mọi thứ vậy.', 1, 1, 1, 'Truyện dài, Tình bạn, Thiếu nhi, Nguyễn Nhật Ánh'),
+('Thằng Quỷ Nhỏ', 70000, 0, NULL, "thằng_quỷ_nhỏ.jpg", 'Chuông reo, cả lớp xếp hàng. Nga bước ra khỏi lớp và trước khi đứng vào hàng sau lưng Hạnh, nó khẽ đưa mắt nhìn lướt qua đám con trai xếp hàng kế bên, kín đáo dò xem nhân vật nào là thằng quỷ nhỏ, nhưng nó không thể đoán định được. Những khuôn mặt vui nhộn và rạng rỡ kia chẳng có gì khả nghi. Hay "hắn" mang biệt danh đó là do "hắn" phá phách không ai chịu nổi? Nga thầm nghĩ và lại liếc sang dãy con trai, tò mò quan sát.', 1, 1, 1, 'Truyện dài, Tình bạn, Thiếu nhi, Nguyễn Nhật Ánh'),
 ('Út Quyên Và Tôi', 45000, 0, NULL, NULL, 'Nếu chẳng may được sinh ra trên cõi đời này, bạn hãy cầu mong mình là người cuối cùng xuất hiện trong gia đình, sau một lô lốc những kẻ làm anh làm chị khác. Đừng nôn nóng, cũng đừng vội vàng. Hãy chờ bọn họ xô đẩy, chen lấn nhau chui ra hết, lúc đó bạn hãy thong thả đặt chân lên mặt đất, ung dung cất tiếng khóc chào đời và hùng hồn tuyên bố:"Ta là con út".', 1, 1, 1, 'Truyện ngắn, Gia đình, Nguyễn Nhật Ánh'),
 ('Và Khi Tro Bụi', 21500, 0, NULL, NULL, 'Người đàn bà đi tìm cái chết bằng một cách rất lạ, chị sống cuộc sống của một hành khách trên những chuyến tàu xa, và tình cờ được chứng kiến một bi kịch gia đình… Câu chuyện khiến người đọc ngạt thở, chuyện được kể bằng một giọng văn điềm tĩnh, nhưng có thể thấy rõ niềm đau giấu bên trong sự tỉnh táo lành lạnh đó. Niềm đau không khó cắt nghĩa, có thể chia sẻ, nhưng không dễ giải tỏa.', 1, 1, 1, 'Truyện ngắn, Bi kịch'),
 ('Ghét,Thân,Thương,Yêu,Cưới', 96000, 0, 'Trần Hạnh, Đặng Xuân Thảo, Hạnh Mai', NULL, 'Mỗi khi nhấc một tập truyện mới của Alice Munro lên, người ta luôn biết điều gì đang chờ đợi mình. Vẫn những thị trấn nhỏ và những thành phố mới ở Ontario và British Columbia. Vẫn những người trẻ đầy gai góc và mâu thuẫn. Vẫn những người già đối mặt với cái chết và mối tình muộn. Vẫn giọng kể thấu suốt sắc lạnh của một người quan sát tỉ mỉ tinh tường. Ấy thế nhưng, dường như mỗi trang lại mang đến một loạt những điều ta không hề lường trước: hành động bất ngờ, cảm xúc bất ngờ, ngôn ngữ bất ngờ, chi tiết bất ngờ. Và cốt truyện thì luôn quá tinh vi phức tạp để có thể tóm tắt lại.Hãy đọc chín truyện ngắn trong Ghét Thân Thương Yêu Cưới. Đó là cách duy nhất để thật sự hiểu những điều kỳ diệu mà bậc phù thủy tâm lý và ngôn từ Alice Munro tạo tác nên', 1, 1, 2, 'Truyện ngắn, Tình cảm'),
@@ -367,3 +374,67 @@ insert into book_author (book_id, author_id) values
     (28, 1),
     (29, 1),
     (30, 20);
+
+insert into membership_rank(rank_name, min_point, discount_percent) values
+('Thành viên', 100, 0),
+('Bạc', 2000, 5),
+('Vàng', 5000, 10),
+('Bạch Kim', 10000, 15);
+
+insert into customer(customer_name, customer_phone, point, rank_id) values
+("nquyleee", "0909901421", 1500, 2),
+("Lê Ngọc Quý", "0934129959", 0, 1);
+
+insert into payment_method(payment_method_name) values
+('Tiền mặt'),
+('Chuyển khoản ngân hàng'),
+('Thẻ tín dụng/Ghi nợ'),
+('Ví điện tử (Momo/ZaloPay)');
+
+insert into action (action_code, action_name) values
+('VIEW_STATISTIC', 'Xem thống kê'),
+('MANAGE_EMPLOYEE', 'Quản lý nhân viên'),
+('MANAGE_PRODUCT', 'Quản lý sản phẩm'),
+('SELL_PRODUCT', 'Bán hàng'),
+('IMPORT_PRODUCT', 'Nhập hàng');
+
+insert into permission(role_id, action_id, is_view, is_action) values
+(1, 1, 1, 1),
+(1, 2, 1, 1),
+(1, 3, 1, 1),
+(1, 4, 1, 1),
+(1, 5, 1, 1);
+
+insert into permission(role_id, action_id, is_view, is_action) values
+(2, 1, 0, 0),
+(2, 2, 0, 0),
+(2, 3, 1, 0),
+(2, 4, 1, 1),
+(2, 5, 0, 0);
+
+insert into system_parameter(param_key, param_value, description) values
+('VAT', '8', 'Thuế giá trị gia tăng mặc định (8%)'),
+('EARNED_POINTS_PER_10K', '100', 'Số điểm nhận được trên mỗi 10K mua');
+
+insert into promotion (promotion_name, percent, start_date, end_date, status) values
+('Mừng Xuân 2026 - Giảm giá Văn học', 20.00, '2026-02-01 00:00:00', '2026-02-28 23:59:59', 1),
+('Xả kho Truyện Tranh - Flash Sale', 50.00, '2026-02-10 00:00:00', '2026-02-15 23:59:59', 1),
+('Tuần lễ Kỹ Năng Sống', 15.00, '2026-03-01 00:00:00', '2026-03-07 23:59:59', 1);
+
+-- 1. Áp dụng Promo ID 1 (Mừng Xuân) cho TẤT CẢ sách thuộc Category 1 (Văn học)
+INSERT INTO promotion_detail (promotion_id, book_id)
+SELECT 1, book_id
+FROM book
+WHERE category_id = 1;
+
+-- 2. Áp dụng Promo ID 2 (Xả kho) cho TẤT CẢ sách thuộc Category 3 (Truyện tranh)
+INSERT INTO promotion_detail (promotion_id, book_id)
+SELECT 2, book_id
+FROM book
+WHERE category_id = 3;
+
+-- 3. Áp dụng Promo ID 3 (Kỹ năng) cho TẤT CẢ sách thuộc Category 4 (Kỹ năng sống)
+INSERT INTO promotion_detail (promotion_id, book_id)
+SELECT 3, book_id
+FROM book
+WHERE category_id = 4;
