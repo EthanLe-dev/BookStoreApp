@@ -394,55 +394,74 @@ public class BookFormDialog extends JDialog {
         topPanel.add(searchField, BorderLayout.CENTER);
         contentPanel.add(topPanel, BorderLayout.NORTH);
 
-        JPanel listPanel = new JPanel();
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-        listPanel.setBackground(BG_COLOR);
+        // Use a container panel that will hold filtered results
+        JPanel listContainer = new JPanel(new BorderLayout());
+        listContainer.setBackground(BG_COLOR);
         
-        Map<Integer, JCheckBox> checkBoxes = new HashMap<>();
+        Map<Integer, JCheckBox> allCheckBoxes = new HashMap<>();
         
+        // Create all checkboxes first
         for (AuthorDTO author : authors) {
             JCheckBox cb = new JCheckBox(author.getAuthorName());
             cb.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             cb.setBackground(BG_COLOR);
             cb.setSelected(selectedAuthorIds.contains(author.getAuthorId()));
             cb.setAlignmentX(Component.LEFT_ALIGNMENT);
+            cb.putClientProperty("authorId", author.getAuthorId());
             cb.putClientProperty("authorName", author.getAuthorName().toLowerCase());
-            checkBoxes.put(author.getAuthorId(), cb);
-            listPanel.add(cb);
-            listPanel.add(Box.createVerticalStrut(5));
+            allCheckBoxes.put(author.getAuthorId(), cb);
         }
         
-        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            private void applyFilter() {
-                String keyword = searchField.getText().toLowerCase().trim();
-                for (JCheckBox checkBox : checkBoxes.values()) {
-                    String authorName = (String) checkBox.getClientProperty("authorName");
-                    boolean visible = keyword.isEmpty() || (authorName != null && authorName.contains(keyword));
-                    checkBox.setVisible(visible);
+        // Method to rebuild the list panel based on filter
+        Runnable rebuildList = () -> {
+            String keyword = searchField.getText().toLowerCase().trim();
+            
+            JPanel listPanel = new JPanel();
+            listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+            listPanel.setBackground(BG_COLOR);
+            
+            for (JCheckBox checkBox : allCheckBoxes.values()) {
+                String authorName = (String) checkBox.getClientProperty("authorName");
+                boolean matches = keyword.isEmpty() || (authorName != null && authorName.contains(keyword));
+                
+                if (matches) {
+                    listPanel.add(checkBox);
+                    listPanel.add(Box.createVerticalStrut(5));
                 }
-                listPanel.revalidate();
-                listPanel.repaint();
             }
-
+            
+            // Update the container
+            listContainer.removeAll();
+            JScrollPane scrollPane = new JScrollPane(listPanel);
+            scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            listContainer.add(scrollPane, BorderLayout.CENTER);
+            listContainer.revalidate();
+            listContainer.repaint();
+        };
+        
+        // Initial build
+        rebuildList.run();
+        
+        // Add search listener
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter();
+                rebuildList.run();
             }
 
             @Override
             public void removeUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter();
+                rebuildList.run();
             }
 
             @Override
             public void changedUpdate(javax.swing.event.DocumentEvent e) {
-                applyFilter();
+                rebuildList.run();
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(listPanel);
-        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(listContainer, BorderLayout.CENTER);
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
@@ -454,7 +473,7 @@ public class BookFormDialog extends JDialog {
         JButton okButton = createStyledButton("Xác nhận", BUTTON_COLOR);
         okButton.addActionListener(e -> {
             selectedAuthorIds.clear();
-            for (Map.Entry<Integer, JCheckBox> entry : checkBoxes.entrySet()) {
+            for (Map.Entry<Integer, JCheckBox> entry : allCheckBoxes.entrySet()) {
                 if (entry.getValue().isSelected()) {
                     selectedAuthorIds.add(entry.getKey());
                 }

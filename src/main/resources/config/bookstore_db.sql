@@ -387,7 +387,7 @@ insert into customer(customer_name, customer_phone, point, rank_id) values
 
 insert into payment_method(payment_method_name) values
 ('Tiền mặt'),
-('Chuyển khoản ngân hàng'),
+('Chuyển khoản ngân hàng'), 
 ('Thẻ tín dụng/Ghi nợ'),
 ('Ví điện tử (Momo/ZaloPay)');
 
