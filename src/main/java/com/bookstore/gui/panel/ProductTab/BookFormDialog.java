@@ -348,7 +348,8 @@ public class BookFormDialog extends JDialog {
         ));
         chip.setAlignmentX(Component.LEFT_ALIGNMENT);
         
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(truncateChipText(text));
+        label.setToolTipText(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         label.setForeground(Color.decode("#2E7D32"));
         
@@ -371,7 +372,7 @@ public class BookFormDialog extends JDialog {
     private void showAuthorSelector() {
         JDialog dialog = new JDialog(this, "Chọn tác giả", true);
         dialog.setLayout(new BorderLayout(10, 10));
-        dialog.setSize(400, 400);
+        dialog.setSize(450, 450);
         dialog.setLocationRelativeTo(this);
         
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
@@ -380,9 +381,19 @@ public class BookFormDialog extends JDialog {
         
         JLabel title = new JLabel("Chọn tác giả cho sách");
         title.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        contentPanel.add(title, BorderLayout.NORTH);
-        
-        // Author list
+        JTextField searchField = new JTextField();
+        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
+
+        JPanel topPanel = new JPanel(new BorderLayout(0, 8));
+        topPanel.setBackground(BG_COLOR);
+        topPanel.add(title, BorderLayout.NORTH);
+        topPanel.add(searchField, BorderLayout.CENTER);
+        contentPanel.add(topPanel, BorderLayout.NORTH);
+
         JPanel listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
         listPanel.setBackground(BG_COLOR);
@@ -395,11 +406,40 @@ public class BookFormDialog extends JDialog {
             cb.setBackground(BG_COLOR);
             cb.setSelected(selectedAuthorIds.contains(author.getAuthorId()));
             cb.setAlignmentX(Component.LEFT_ALIGNMENT);
+            cb.putClientProperty("authorName", author.getAuthorName().toLowerCase());
             checkBoxes.put(author.getAuthorId(), cb);
             listPanel.add(cb);
             listPanel.add(Box.createVerticalStrut(5));
         }
         
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void applyFilter() {
+                String keyword = searchField.getText().toLowerCase().trim();
+                for (JCheckBox checkBox : checkBoxes.values()) {
+                    String authorName = (String) checkBox.getClientProperty("authorName");
+                    boolean visible = keyword.isEmpty() || (authorName != null && authorName.contains(keyword));
+                    checkBox.setVisible(visible);
+                }
+                listPanel.revalidate();
+                listPanel.repaint();
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(listPanel);
         scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
         contentPanel.add(scrollPane, BorderLayout.CENTER);
@@ -431,6 +471,18 @@ public class BookFormDialog extends JDialog {
         dialog.setVisible(true);
     }
     
+     private String truncateChipText(String text) {
+        if (text == null) {
+            return "";
+        }
+        int maxLength = 24;
+        if (text.length() <= maxLength) {
+            return text;
+        }
+        return text.substring(0, maxLength - 3) + "...";
+    }
+
+
     private void showTagSelector() {
         JDialog dialog = new JDialog(this, "Chọn tags", true);
         dialog.setLayout(new BorderLayout(10, 10));

@@ -21,10 +21,8 @@ public class BookBUS {
     public String  addBook(BookDTO book) {
         if (book.getBookName() == null || book.getBookName().trim().isEmpty())
             return "Tên sách không được để trống!";
-        if (bookDAO.exists(book.getBookName())) 
-            return "Tên sách đã tồn tại trong hệ thống!";
-        if (book.getSellingPrice() < 0 || book.getQuantity() < 0)
-            return "Giá bán và số lượng phải lớn hơn hoặc bằng 0!";
+        if (existsByInfo(book))
+            return "Sách đã tồn tại (trùng tên, tác giả, nhà cung cấp và người dịch)!";
         if (book.getAuthorIdsList().isEmpty())
             return "Vui lòng chọn ít nhất một tác giả cho sách!";   
         if (book.getCategoryId() <= 0)
@@ -39,6 +37,64 @@ public class BookBUS {
         }
         return "Thêm sách thất bại!";
     }
+
+
+    private boolean existsByInfo(BookDTO candidate) {
+        if (!bookDAO.existsByName(candidate.getBookName())) {
+            return false;
+        }
+
+        for (BookDTO existing : listBook) {
+            if (!normalizeText(existing.getBookName()).equals(normalizeText(candidate.getBookName()))) {
+                continue;
+            }
+
+            if (!sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList())) {
+                continue;
+            }
+
+            if (existing.getSupplierId() != candidate.getSupplierId()) {
+                continue;
+            }
+
+            if (!normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
+                continue;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean sameAuthorIds(List<Integer> firstAuthors, List<Integer> secondAuthors) {
+        if (firstAuthors == null || secondAuthors == null) {
+            return firstAuthors == secondAuthors;
+        }
+
+        if (firstAuthors.size() != secondAuthors.size()) {
+            return false;
+        }
+
+        for (Integer firstId : firstAuthors) {
+            boolean found = false;
+            for (Integer secondId : secondAuthors) {
+                if (firstId != null && firstId.equals(secondId)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private String normalizeText(String value) {
+        return value == null ? "" : value.trim().toLowerCase();
+    }
+
 
     public String updateBook(BookDTO book) {
         if (book.getBookName().trim().isEmpty())

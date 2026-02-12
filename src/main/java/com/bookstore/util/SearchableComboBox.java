@@ -72,6 +72,17 @@ public class SearchableComboBox<E> extends JComboBox<E> {
         updateModel(originalItems);
     }
 
+    public void resetSelection() {
+        updateModel(originalItems);
+        if (getItemCount() > 0) {
+            super.setSelectedIndex(0);
+            JTextField textEditor = (JTextField) this.getEditor().getEditorComponent();
+            Object selectedItem = getSelectedItem();
+            textEditor.setText(selectedItem != null ? selectedItem.toString() : "");
+        }
+    }
+
+
     @Override
     public void setSelectedItem(Object object) {
         if (isFiltering) {

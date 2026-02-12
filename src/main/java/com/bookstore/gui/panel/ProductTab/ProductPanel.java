@@ -25,7 +25,7 @@ public class ProductPanel extends JPanel {
     // Components
     private JTextField searchField;
     private SearchableComboBox<String> authorCombo;
-    private SearchableComboBox<String> categoryCombo;
+    private JComboBox<String> categoryCombo;
     private SearchableComboBox<String> supplierCombo;
     private JComboBox<String> statusCombo;
     private JTable bookTable;
@@ -197,7 +197,9 @@ public class ProductPanel extends JPanel {
         // Row 0, Col 3: Category ComboBox
         gbc.gridx = 3;
         gbc.weightx = 1;
-        categoryCombo = new SearchableComboBox<>(getCategoryNamesList());
+        categoryCombo = new JComboBox<>(getCategoryNamesList().toArray(new String[0]));
+        categoryCombo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        categoryCombo.setBackground(Color.WHITE);
         categoryCombo.setPreferredSize(new Dimension(220, 35));
         categoryCombo.addActionListener(e -> filterBooks());
         gridPanel.add(categoryCombo, gbc);
@@ -406,9 +408,9 @@ public class ProductPanel extends JPanel {
         Object selectedSupplierObj = supplierCombo.getSelectedItem();
         String selectedStatus = (String) statusCombo.getSelectedItem();
         
-        String selectedAuthor = selectedAuthorObj != null ? selectedAuthorObj.toString() : "";
-        String selectedCategory = selectedCategoryObj != null ? selectedCategoryObj.toString() : "";
-        String selectedSupplier = selectedSupplierObj != null ? selectedSupplierObj.toString() : "";
+        String selectedAuthor = getSelectedFilterValue(selectedAuthorObj);
+        String selectedCategory = getSelectedFilterValue(selectedCategoryObj);
+        String selectedSupplier = getSelectedFilterValue(selectedSupplierObj);
         
         List<BookDTO> filtered = new ArrayList<>();
         
@@ -558,19 +560,24 @@ public class ProductPanel extends JPanel {
 
     private void resetFilters() {
         searchField.setText("");
-        if (authorCombo.getItemCount() > 0) {
-            authorCombo.setSelectedIndex(0);
-        }
+        authorCombo.resetSelection();
         if (categoryCombo.getItemCount() > 0) {
             categoryCombo.setSelectedIndex(0);
         }
-        if (supplierCombo.getItemCount() > 0) {
-            supplierCombo.setSelectedIndex(0);
-        }
+        supplierCombo.resetSelection();
         statusCombo.setSelectedIndex(0);
         selectedTags.clear();
         updateTagButtonText();
         filterBooks();
+    }
+
+
+    private String getSelectedFilterValue(Object selectedObj) {
+        if (selectedObj == null) {
+            return "";
+        }
+        String value = selectedObj.toString();
+        return value != null ? value.trim() : "";
     }
 
     private void showAddBookDialog() {
@@ -1035,7 +1042,10 @@ public class ProductPanel extends JPanel {
             
             JPanel panel = new JPanel(new BorderLayout(10, 0));
             panel.setOpaque(true);
-            panel.setBorder(new EmptyBorder(5, 10, 5, 10));
+            panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_COLOR),
+                new EmptyBorder(5, 10, 5, 10)
+            ));
             
             if (isSelected) {
                 panel.setBackground(table.getSelectionBackground());
@@ -1076,7 +1086,10 @@ public class ProductPanel extends JPanel {
             label.setFont(new Font("Segoe UI", Font.BOLD, 12));
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setOpaque(true);
-            label.setBorder(new EmptyBorder(5, 10, 5, 10));
+            label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_COLOR),
+                new EmptyBorder(5, 10, 5, 10)
+            ));
             
             if (value.toString().equals("Đang bán")) {
                 label.setForeground(Color.decode("#2E7D32"));
@@ -1102,7 +1115,8 @@ public class ProductPanel extends JPanel {
         public ActionCellRenderer() {
             setLayout(new GridBagLayout()); // Use GridBagLayout for perfect centering
             setOpaque(true);
-            
+            setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_COLOR));
+
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 0;

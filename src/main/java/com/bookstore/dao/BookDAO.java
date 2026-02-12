@@ -106,7 +106,7 @@ public class BookDAO {
     }
 
 
-    public boolean exists(String bookname){
+    public boolean existsByName(String bookname){
         String sql = "SELECT * FROM book WHERE book_name = ? ";
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql);) {
