@@ -28,7 +28,7 @@ public class BookBUS {
         if (book.getSupplierId() <= 0)
             return "Vui lòng chọn nhà cung cấp cho sách!";
         
-        String duplicateCheck = checkDuplicate(book);
+        String duplicateCheck = validateDuplicate(book, false);
         if (duplicateCheck != null) {
             return duplicateCheck;
         }
@@ -42,40 +42,28 @@ public class BookBUS {
         return "Thêm sách thất bại!";
     }
 
-    private String checkDuplicate(BookDTO candidate) {
+    private String validateDuplicate(BookDTO candidate, boolean isUpdate) {
+    if (!bookDAO.existsByName(candidate.getBookName())) return null;
 
-        if (!bookDAO.existsByName(candidate.getBookName())) {
-            return null;
+    String normalizedName = normalizeText(candidate.getBookName());
+
+    for (BookDTO existing : listBook) {
+        // Nếu là Update, bỏ qua chính nó dựa trên ID
+        if (isUpdate && existing.getBookId() == candidate.getBookId()) {
+            continue;
         }
-        
 
-        String normalizedCandidateName = normalizeText(candidate.getBookName());
-        
-        for (BookDTO existing : listBook) {
-
-            if (!normalizedCandidateName.equals(normalizeText(existing.getBookName()))) {
-                continue; 
-            }
+        // Logic so sánh chung
+        if (normalizedName.equals(normalizeText(existing.getBookName())) &&
+            sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList()) &&
+            existing.getSupplierId() == candidate.getSupplierId() &&
+            normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
             
-            if (!sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList())) {
-                continue;
-            }
-            
-
-            if (existing.getSupplierId() != candidate.getSupplierId()) {
-                continue;
-            }
-
-            if (!normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
-                continue; 
-            }
-            
-
             return "Sách đã tồn tại! (Trùng tên, tác giả, nhà cung cấp và người dịch)";
         }
-        
-        return null;
     }
+    return null;
+}
 
 
     private boolean sameAuthorIds(List<Integer> firstAuthors, List<Integer> secondAuthors) {
@@ -113,8 +101,7 @@ public class BookBUS {
         if (book.getBookName().trim().isEmpty())
             return "Tên sách không được để trống!";
         
-
-        String duplicateCheck = checkDuplicateForUpdate(book);
+        String duplicateCheck = validateDuplicate(book, true);
         if (duplicateCheck != null) {
             return duplicateCheck;
         }
@@ -131,44 +118,6 @@ public class BookBUS {
         return "Cập nhật thất bại!";
     }
 
-    private String checkDuplicateForUpdate(BookDTO candidate) {
-        if (!bookDAO.existsByName(candidate.getBookName())) {
-
-            return null;
-        }
-        
-
-        String normalizedCandidateName = normalizeText(candidate.getBookName());
-        
-        for (BookDTO existing : listBook) {
-
-            if (existing.getBookId() == candidate.getBookId()) {
-                continue;
-            }
-            
-            if (!normalizedCandidateName.equals(normalizeText(existing.getBookName()))) {
-                continue;
-            }
-            
-
-            if (!sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList())) {
-                continue;
-            }
-            
-
-            if (existing.getSupplierId() != candidate.getSupplierId()) {
-                continue;
-            }
-            
-            if (!normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
-                continue;
-            }
-            
-            return "Sách đã tồn tại! (Trùng tên, tác giả, nhà cung cấp và người dịch)";
-        }
-        
-        return null;
-    }
     
     public List<BookDTO> search(String name) {
         List<BookDTO> result = new ArrayList<>();
