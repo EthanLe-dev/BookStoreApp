@@ -18,17 +18,21 @@ public class BookBUS {
         return this.listBook;
     }
 
-    public String  addBook(BookDTO book) {
+    public String addBook(BookDTO book) {
         if (book.getBookName() == null || book.getBookName().trim().isEmpty())
             return "Tên sách không được để trống!";
-        if (existsByInfo(book))
-            return "Sách đã tồn tại (trùng tên, tác giả, nhà cung cấp và người dịch)!";
         if (book.getAuthorIdsList().isEmpty())
             return "Vui lòng chọn ít nhất một tác giả cho sách!";   
         if (book.getCategoryId() <= 0)
             return "Vui lòng chọn thể loại cho sách!";
         if (book.getSupplierId() <= 0)
             return "Vui lòng chọn nhà cung cấp cho sách!";
+        
+        String duplicateCheck = checkDuplicate(book);
+        if (duplicateCheck != null) {
+            return duplicateCheck;
+        }
+        
         int generatedId = bookDAO.add(book);
         if (generatedId != -1) {
             book.setBookId(generatedId);
@@ -38,33 +42,41 @@ public class BookBUS {
         return "Thêm sách thất bại!";
     }
 
+    private String checkDuplicate(BookDTO candidate) {
 
-    private boolean existsByInfo(BookDTO candidate) {
         if (!bookDAO.existsByName(candidate.getBookName())) {
-            return false;
+            return null;
         }
+        
 
+        String normalizedCandidateName = normalizeText(candidate.getBookName());
+        
         for (BookDTO existing : listBook) {
-            if (!normalizeText(existing.getBookName()).equals(normalizeText(candidate.getBookName()))) {
-                continue;
-            }
 
+            if (!normalizedCandidateName.equals(normalizeText(existing.getBookName()))) {
+                continue; 
+            }
+            
             if (!sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList())) {
                 continue;
             }
+            
 
             if (existing.getSupplierId() != candidate.getSupplierId()) {
                 continue;
             }
 
             if (!normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
-                continue;
+                continue; 
             }
+            
 
-            return true;
+            return "Sách đã tồn tại! (Trùng tên, tác giả, nhà cung cấp và người dịch)";
         }
-        return false;
+        
+        return null;
     }
+
 
     private boolean sameAuthorIds(List<Integer> firstAuthors, List<Integer> secondAuthors) {
         if (firstAuthors == null || secondAuthors == null) {
@@ -91,6 +103,7 @@ public class BookBUS {
         return true;
     }
 
+
     private String normalizeText(String value) {
         return value == null ? "" : value.trim().toLowerCase();
     }
@@ -99,6 +112,12 @@ public class BookBUS {
     public String updateBook(BookDTO book) {
         if (book.getBookName().trim().isEmpty())
             return "Tên sách không được để trống!";
+        
+
+        String duplicateCheck = checkDuplicateForUpdate(book);
+        if (duplicateCheck != null) {
+            return duplicateCheck;
+        }
 
         if (bookDAO.update(book)) {
             for (int i = 0; i < listBook.size(); i++) {
@@ -110,6 +129,45 @@ public class BookBUS {
             return "Cập nhật thành công!";
         }
         return "Cập nhật thất bại!";
+    }
+
+    private String checkDuplicateForUpdate(BookDTO candidate) {
+        if (!bookDAO.existsByName(candidate.getBookName())) {
+
+            return null;
+        }
+        
+
+        String normalizedCandidateName = normalizeText(candidate.getBookName());
+        
+        for (BookDTO existing : listBook) {
+
+            if (existing.getBookId() == candidate.getBookId()) {
+                continue;
+            }
+            
+            if (!normalizedCandidateName.equals(normalizeText(existing.getBookName()))) {
+                continue;
+            }
+            
+
+            if (!sameAuthorIds(existing.getAuthorIdsList(), candidate.getAuthorIdsList())) {
+                continue;
+            }
+            
+
+            if (existing.getSupplierId() != candidate.getSupplierId()) {
+                continue;
+            }
+            
+            if (!normalizeText(existing.getTranslator()).equals(normalizeText(candidate.getTranslator()))) {
+                continue;
+            }
+            
+            return "Sách đã tồn tại! (Trùng tên, tác giả, nhà cung cấp và người dịch)";
+        }
+        
+        return null;
     }
     
     public List<BookDTO> search(String name) {
