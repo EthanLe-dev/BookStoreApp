@@ -352,12 +352,7 @@ public class ProductPanel extends JPanel {
         noResultsLabel.setForeground(Color.decode("#999999"));
         noResultsLabel.setVisible(false);
         
-        JPanel tableContainer = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-            }
-        };
+        JPanel tableContainer = new JPanel();
         tableContainer.setLayout(new OverlayLayout(tableContainer));
         
         // Center panel for no results label
@@ -1069,7 +1064,7 @@ public class ProductPanel extends JPanel {
             
             JLabel nameLabel = new JLabel("<html><b>" + truncatedName + "</b></html>");
             nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            nameLabel.setVerticalAlignment(SwingConstants.CENTER); // Center vertically in cell
+            nameLabel.setVerticalAlignment(SwingConstants.CENTER);
             nameLabel.setHorizontalAlignment(SwingConstants.LEFT);
             panel.add(nameLabel, BorderLayout.CENTER);
             
@@ -1107,13 +1102,12 @@ public class ProductPanel extends JPanel {
         }
     }
 
-    // FIX 3: Fixed action cell renderer alignment
     class ActionCellRenderer extends JPanel implements TableCellRenderer {
         private JButton editButton;
         private JButton viewButton;
         
         public ActionCellRenderer() {
-            setLayout(new GridBagLayout()); // Use GridBagLayout for perfect centering
+            setLayout(new GridBagLayout());
             setOpaque(true);
             setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, BORDER_COLOR));
 
@@ -1155,7 +1149,6 @@ public class ProductPanel extends JPanel {
         }
     }
 
-    // FIX 3: Fixed action cell editor alignment and selection issue
     class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
         private JPanel panel;
         private JButton editButton;
@@ -1163,7 +1156,7 @@ public class ProductPanel extends JPanel {
         private BookDTO currentBook;
         
         public ActionCellEditor() {
-            panel = new JPanel(new GridBagLayout()); // Use GridBagLayout for perfect centering
+            panel = new JPanel(new GridBagLayout());
             panel.setOpaque(true);
             
             GridBagConstraints gbc = new GridBagConstraints();
@@ -1180,7 +1173,6 @@ public class ProductPanel extends JPanel {
             editButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             editButton.addActionListener(e -> {
                 fireEditingStopped();
-                // Use SwingUtilities.invokeLater to ensure dialog opens after cell editing stops
                 SwingUtilities.invokeLater(() -> showEditBookDialog(currentBook));
             });
             
